@@ -85,6 +85,8 @@ input[type=number]{width:80px}
   <div class="stage" id="stage"><video id="v" muted playsinline></video><canvas id="ov"></canvas></div>
   <p class="hint" id="hint">‘화면 공유 시작’ → 메이플스토리 창 선택 → 영역 지정 버튼을 누르고 미리보기에서 드래그하세요.</p>
   <label>알림 볼륨 <input type="range" id="vol" min="0" max="100"></label>
+  <label>소리 증폭 <select id="boost"><option value="1">보통</option><option value="2.5">크게</option><option value="4">아주 크게</option></select>
+    <span class="meta">‘큰 음성’은 브라우저 한계로 증폭되지 않으니 윈도우 볼륨으로 조절하세요.</span></label>
 </div>
 
 <div class="card">
@@ -114,7 +116,9 @@ input[type=number]{width:80px}
     <strong>룬 알림</strong> <span class="meta">(4.5초마다 확인, 의심되면 0.2초 간격으로 재확인)</span>
     <div class="status" id="runeS">대기 중</div>
     <div class="meta" id="runeM">보라색 픽셀: -</div>
-    <label>민감도: 보라색 픽셀 <b id="runeTV"></b>개 이상<input type="range" id="runeT" min="1" max="60"></label>
+    <label>마름모 크기 <input type="number" id="runeMin" min="3" max="30"> ~ <input type="number" id="runeMax" min="6" max="80"> px (가로·세로)</label>
+    <label>마름모 형태 일치 기준: <b id="runeShapeV"></b>% 이상<input type="range" id="runeShape" min="50" max="95"></label>
+    <p class="hint" style="margin-top:4px">보라색 픽셀이 마름모 모양으로 뭉쳐 있을 때만 룬 후보로 봅니다. 인식된 마름모는 미리보기에 노란 테두리로 표시됩니다.</p>
     <label>유지 시간 <input type="number" id="runeHold" min="0.5" max="5" step="0.5"> 초 이상 계속 보이면 룬으로 판단</label>
     <label>알림 횟수: <b id="runeCntV"></b><input type="range" id="runeCnt" min="0" max="3"></label>
     <label>알림 간격 <input type="number" id="runeInt" min="1" max="60"> 초</label>
@@ -147,14 +151,15 @@ var v=$('v'),ov=$('ov'),octx=ov.getContext('2d');
 var work=document.createElement('canvas'),wctx=work.getContext('2d',{willReadFrequently:true});
 
 /* ---------- 설정 ---------- */
-var DEF={rune:null,hunt:null,runeT:12,runeHold:1,runeCnt:0,runeInt:5,runeSnd:'quiet',
+var DEF={rune:null,hunt:null,runeMin:4,runeMax:40,runeShape:70,runeHold:1,runeCnt:0,runeInt:5,runeSnd:'quiet',
   huntSec:6,huntBr:200,huntD:5,huntCnt:3,huntInt:5,huntSnd:'quiet',
   timerMin:30,timerSec:0,timerCnt:1,timerInt:5,timerSnd:'chime',timerAuto:false};
-var RANGE={runeT:[1,60],runeHold:[0.5,5],runeCnt:[0,3],runeInt:[1,60],
+var RANGE={runeMin:[3,30],runeMax:[6,80],runeShape:[50,95],runeHold:[0.5,5],runeCnt:[0,3],runeInt:[1,60],
   huntSec:[1,600],huntBr:[120,255],huntD:[1,40],huntCnt:[0,3],huntInt:[1,60],
   timerMin:[0,600],timerSec:[0,59],timerCnt:[0,3],timerInt:[1,60]};
 var NUM=Object.keys(RANGE),STR=['runeSnd','huntSnd','timerSnd'],BOOL=['timerAuto'];
-var SOUNDS={quiet:'조용한 띵동',chime:'차임벨',beep:'경보 삐삐',siren:'사이렌',loud:'큰 음성'};
+var SOUNDS={quiet:'조용한 띵동',chime:'차임벨',beep:'경보 삐삐',siren:'사이렌',clock:'자명종',coin:'코인 띠링',bell:'종소리',
+  marimba:'마림바',whistle:'호루라기',rise:'상승음',horn:'경적',pulse:'펄스 경보',loud:'큰 음성'};
 var LIM=[1,3,5,Infinity],LBL=['1번만','3번까지','5번까지','사라질 때까지 계속'],TLBL=['1번만','3번까지','5번까지','재시작·초기화할 때까지 계속'];
 var cfg=Object.assign({},DEF),vol=70,paused=false,pip=null;
 var presets=Object.create(null),last='',logs=[];
@@ -191,7 +196,7 @@ NUM.forEach(function(k){
   $(k).onchange=function(){$(k).value=cfg[k]}});
 STR.forEach(function(k){$(k).onchange=function(){cfg[k]=$(k).value}});
 BOOL.forEach(function(k){$(k).onchange=function(){cfg[k]=$(k).checked}});
-function setVol(n){vol=n;$('vol').value=n;if(master)master.gain.value=vol/100;
+function setVol(n){vol=n;$('vol').value=n;if(master)master.gain.value=gainVal();
   try{localStorage.setItem('maple-vol',vol)}catch(e){}updateStatus()}
 $('vol').oninput=function(){setVol(+$('vol').value)};
 
@@ -218,20 +223,37 @@ $('impFile').onchange=function(){var f=$('impFile').files[0];if(!f)return;var r=
     $('impFile').value=''};r.readAsText(f)};
 
 /* ---------- 소리 ---------- */
-var actx=null,master=null;
+/* 볼륨 증폭: master(볼륨×증폭) → 리미터(컴프레서) → 스피커. 소리가 커져도 찢어지지 않게 리미터가 잡아줍니다. */
+var actx=null,master=null,boost=2.5;
+try{boost=clampNum(localStorage.getItem('maple-boost')||2.5,1,4)||2.5}catch(e){}
+function gainVal(){return vol/100*boost}
 function ac(){try{if(!actx){var C=window.AudioContext||window.webkitAudioContext;if(!C)return null;
-    actx=new C();master=actx.createGain();master.connect(actx.destination)}
-  if(actx.state==='suspended')actx.resume();master.gain.value=vol/100;return actx}catch(e){return null}}
+    actx=new C();master=actx.createGain();var lim=actx.createDynamicsCompressor();
+    lim.threshold.value=-6;lim.knee.value=6;lim.ratio.value=12;lim.attack.value=0.002;lim.release.value=0.15;
+    master.connect(lim);lim.connect(actx.destination)}
+  if(actx.state==='suspended')actx.resume();master.gain.value=gainVal();return actx}catch(e){return null}}
+function env(g,t,dur,peak){g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(peak,t+0.015);g.gain.exponentialRampToValueAtTime(0.0001,t+dur)}
 function tone(f,t,dur,type,peak,f2){var o=actx.createOscillator(),g=actx.createGain();o.type=type;
   o.frequency.setValueAtTime(f,t);if(f2)o.frequency.linearRampToValueAtTime(f2,t+dur);
-  g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(peak,t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
-  o.connect(g);g.connect(master);o.start(t);o.stop(t+dur+0.05)}
+  env(g,t,dur,peak);o.connect(g);g.connect(master);o.start(t);o.stop(t+dur+0.05)}
 var PLAY={
-  quiet:function(t){tone(660,t,0.5,'sine',0.35);tone(520,t+0.35,0.55,'sine',0.35)},
-  chime:function(t){[1047,1319,1568,2093].forEach(function(f,i){tone(f,t+i*0.18,0.9,'triangle',0.3)})},
-  beep:function(t){for(var i=0;i<4;i++)tone(1000,t+i*0.22,0.13,'square',0.12)},
-  siren:function(t){for(var i=0;i<2;i++){tone(600,t+i*1.1,0.55,'sawtooth',0.1,1200);tone(1200,t+i*1.1+0.55,0.55,'sawtooth',0.1,600)}}
+  quiet:function(t){tone(660,t,0.5,'sine',0.7);tone(520,t+0.35,0.55,'sine',0.7)},
+  chime:function(t){[1047,1319,1568,2093].forEach(function(f,i){tone(f,t+i*0.18,0.9,'triangle',0.55)})},
+  beep:function(t){for(var i=0;i<4;i++)tone(1000,t+i*0.22,0.13,'square',0.25)},
+  siren:function(t){for(var i=0;i<2;i++){tone(600,t+i*1.1,0.55,'sawtooth',0.22,1200);tone(1200,t+i*1.1+0.55,0.55,'sawtooth',0.22,600)}},
+  clock:function(t){for(var g=0;g<3;g++)for(var i=0;i<4;i++)tone(1800,t+g*0.6+i*0.08,0.06,'square',0.25)},
+  coin:function(t){for(var k=0;k<2;k++){tone(988,t+k*0.6,0.08,'square',0.25);tone(1319,t+k*0.6+0.08,0.4,'square',0.25)}},
+  bell:function(t){[0,1].forEach(function(k){var s=t+k*1.0;tone(880,s,1.8,'sine',0.6);tone(1760,s,1.1,'sine',0.25);tone(2430,s,0.7,'sine',0.15)})},
+  marimba:function(t){[523,659,784,1047].forEach(function(f,i){var s=t+i*0.13;tone(f,s,0.4,'sine',0.7);tone(f*4,s,0.06,'sine',0.15)})},
+  whistle:function(t){for(var k=0;k<2;k++){var s=t+k*0.5,o=actx.createOscillator(),l=actx.createOscillator(),lg=actx.createGain(),g=actx.createGain();
+    o.type='sine';o.frequency.value=2600;l.frequency.value=28;lg.gain.value=150;l.connect(lg);lg.connect(o.frequency);
+    env(g,s,0.38,0.5);o.connect(g);g.connect(master);o.start(s);l.start(s);o.stop(s+0.42);l.stop(s+0.42)}},
+  rise:function(t){for(var k=0;k<2;k++)tone(400,t+k*0.9,0.8,'triangle',0.6,1600)},
+  horn:function(t){for(var i=0;i<2;i++){tone(220,t+i*0.45,0.35,'sawtooth',0.3);tone(277,t+i*0.45,0.35,'sawtooth',0.3)}},
+  pulse:function(t){for(var i=0;i<6;i++)tone(i%2?660:880,t+i*0.18,0.15,'square',0.25)}
 };
+$('boost').value=String(boost);
+$('boost').onchange=function(){boost=+$('boost').value;try{localStorage.setItem('maple-boost',boost)}catch(e){}if(master)master.gain.value=gainVal()};
 var SPEECH={rune:'룬이 나타났어요. 확인해주세요',hunt:'사냥이 멈췄어요. 확인해주세요',timer:'타이머 시간이 다 됐어요'};
 function speak(text){try{speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(text);u.lang='ko-KR';u.volume=vol/100;speechSynthesis.speak(u)}
   catch(e){sound('','quiet')}}
@@ -344,39 +366,68 @@ ov.onpointerup=function(){if(!drag)return;var d=drag;drag=null;
   if(r.w>0.002&&r.h>0.002){cfg[picking]=r;resetState()}picking=null;$('hint').textContent='영역을 지정했습니다. 프리셋 ‘저장’을 눌러 기록하세요.';draw()};
 function box(r,c,t){if(!r)return;octx.strokeStyle=c;octx.lineWidth=2;octx.strokeRect(r.x*ov.width,r.y*ov.height,r.w*ov.width,r.h*ov.height);octx.fillStyle=c;octx.font='13px sans-serif';octx.fillText(t,r.x*ov.width+3,r.y*ov.height-4)}
 function draw(){octx.clearRect(0,0,ov.width,ov.height);box(cfg.rune,'#a855f7','미니맵');box(cfg.hunt,'#22c55e','MP');
+  if(R&&stream&&cfg.rune)R.boxes.forEach(function(b){var p=3/ov.width;box({x:b.x-p,y:b.y-p,w:b.w+2*p,h:b.h+2*p},'#facc15','')});
   if(drag){box({x:Math.min(drag.a.x,drag.b.x),y:Math.min(drag.a.y,drag.b.y),w:Math.abs(drag.a.x-drag.b.x),h:Math.abs(drag.a.y-drag.b.y)},'#facc15','')}}
 
 /* ---------- 분석 ---------- */
 var R,H,nextHunt=0,nextRune=0;
 function resetState(){var now=Date.now();
-  R={cand:0,active:false,miss:0,cnt:0,last:0,n:null};
+  R={cand:0,active:false,miss:0,cnt:0,last:0,n:null,dia:0,boxes:[]};
   H={ref:null,since:now,cnt:0,last:0,sec:0,stalled:false};
   nextHunt=0;nextRune=0;updateStatus()}
 function grab(r){var W=v.videoWidth,Hh=v.videoHeight;if(!W)return null;
   var w=Math.max(1,Math.floor(r.w*W)),h=Math.max(1,Math.floor(r.h*Hh));
   if(work.width!==w)work.width=w;if(work.height!==h)work.height=h;
-  wctx.drawImage(v,Math.floor(r.x*W),Math.floor(r.y*Hh),w,h,0,0,w,h);return wctx.getImageData(0,0,w,h).data}
+  wctx.drawImage(v,Math.floor(r.x*W),Math.floor(r.y*Hh),w,h,0,0,w,h);return{d:wctx.getImageData(0,0,w,h).data,w:w,h:h}}
 function purple(r,g,b){var mx=Math.max(r,g,b),d=mx-Math.min(r,g,b);if(mx<90||d/mx<0.35)return false;
   var h=mx===r?((g-b)/d+6)%6:mx===g?(b-r)/d+2:(r-g)/d+4;h*=60;return h>=255&&h<=320}
 
 /* 룬: 보라색이 보이면 0.2초 간격으로 재확인 → 설정한 시간 동안 계속 보여야 룬으로 판단 */
-function checkRune(now){var d=grab(cfg.rune);if(!d){nextRune=now+1000;return}
-  var n=0;for(var i=0;i<d.length;i+=4)if(purple(d[i],d[i+1],d[i+2]))n++;R.n=n;
-  var hit=n>=cfg.runeT;
+/* 마름모 판정: 보라색 픽셀 덩어리(8방향 연결)마다
+   ① 크기 범위 ② 가로세로 비율 1.5 이하 ③ 채움 비율 35~72% (마름모≈50%, 원≈78%, 사각형≈100%)
+   ④ 마름모 안쪽은 채워져 있고 바깥 모서리는 비어 있는지 점수로 확인 */
+function diamondScore(mask,w,x0,y0,bw,bh){var a=(bw-1)/2,b=(bh-1)/2,inT=0,inH=0,outT=0,outH=0;
+  for(var y=0;y<bh;y++)for(var x=0;x<bw;x++){var dist=Math.abs(x-a)/a+Math.abs(y-b)/b,m=mask[(y0+y)*w+x0+x];
+    if(dist<=1.01){inT++;inH+=m}else if(dist>=1.25){outT++;outH+=m}}
+  return (inT?inH/inT:0)*(1-(outT?outH/outT:0))}
+function findDiamonds(d,w,h){var n=w*h,mask=new Uint8Array(n),cnt=0;
+  for(var i=0,k=0;k<n;i+=4,k++)if(purple(d[i],d[i+1],d[i+2])){mask[k]=1;cnt++}
+  var seen=new Uint8Array(n),stack=new Int32Array(n),found=[],lo=cfg.runeMin,hi=Math.max(cfg.runeMin,cfg.runeMax);
+  for(var s=0;s<n;s++){if(!mask[s]||seen[s])continue;
+    var sp=0,x0=w,y0=h,x1=-1,y1=-1,c=0;stack[sp++]=s;seen[s]=1;
+    while(sp){var p=stack[--sp],px=p%w,py=(p-px)/w;c++;
+      if(px<x0)x0=px;if(px>x1)x1=px;if(py<y0)y0=py;if(py>y1)y1=py;
+      for(var dy=-1;dy<=1;dy++)for(var dx=-1;dx<=1;dx++){if(!dx&&!dy)continue;var nx=px+dx,ny=py+dy;
+        if(nx<0||ny<0||nx>=w||ny>=h)continue;var q=ny*w+nx;if(mask[q]&&!seen[q]){seen[q]=1;stack[sp++]=q}}}
+    var bw=x1-x0+1,bh=y1-y0+1;
+    if(bw<lo||bh<lo||bw>hi||bh>hi)continue;
+    if(Math.max(bw,bh)/Math.min(bw,bh)>1.5)continue;
+    var fill=c/(bw*bh);if(fill<0.35||fill>0.72)continue;
+    var sc=diamondScore(mask,w,x0,y0,bw,bh);
+    if(sc>=cfg.runeShape/100)found.push({x:x0,y:y0,w:bw,h:bh,s:sc})}
+  return{cnt:cnt,found:found}}
+
+function checkRune(now){var g=grab(cfg.rune);if(!g){nextRune=now+1000;return}
+  var res=findDiamonds(g.d,g.w,g.h),rr=cfg.rune;R.n=res.cnt;R.dia=res.found.length;
+  R.boxes=res.found.map(function(f){return{x:rr.x+f.x/g.w*rr.w,y:rr.y+f.y/g.h*rr.h,w:f.w/g.w*rr.w,h:f.h/g.h*rr.h}});
+  var best=res.found.reduce(function(a,f){return !a||f.s>a.s?f:a},null);
+  var n=best?best.w+'×'+best.h+' 마름모':'';
+  if(!$('stage').classList.contains('hide'))draw();
+  var hit=!!best;
   if(R.active){
     if(hit){R.miss=0;
-      if(R.cnt<LIM[cfg.runeCnt]&&now-R.last>=cfg.runeInt*1000){R.cnt++;R.last=now;notify('rune','룬 재알림 ('+R.cnt+'번째) · 보라색 '+n+'px')}}
+      if(R.cnt<LIM[cfg.runeCnt]&&now-R.last>=cfg.runeInt*1000){R.cnt++;R.last=now;notify('rune','룬 재알림 ('+R.cnt+'번째) · '+n)}}
     else if(++R.miss>=2){R.active=false;R.cand=0;R.miss=0}
     nextRune=now+1000}
   else if(hit){
     if(!R.cand)R.cand=now;
     var held=now-R.cand;
     if(held>=cfg.runeHold*1000){R.active=true;R.cnt=1;R.last=now;R.miss=0;
-      notify('rune','룬 감지 · 보라색 '+n+'px, '+(held/1000).toFixed(1)+'초 유지');nextRune=now+1000}
+      notify('rune','룬 감지 · '+n+', '+(held/1000).toFixed(1)+'초 유지');nextRune=now+1000}
     else nextRune=now+200}
   else{R.cand=0;nextRune=now+4500}}
 
-function checkHunt(now){var d=grab(cfg.hunt);if(!d)return;var m=new Uint8Array(d.length/4);
+function checkHunt(now){var g=grab(cfg.hunt);if(!g)return;var d=g.d,m=new Uint8Array(d.length/4);
   for(var i=0,k=0;i<d.length;i+=4,k++)m[k]=Math.min(d[i],d[i+1],d[i+2])>=cfg.huntBr?1:0;
   if(!H.ref||H.ref.length!==m.length){H.ref=m;H.since=now;H.cnt=0}
   else{var df=0;for(var j=0;j<m.length;j++)if(m[j]!==H.ref[j])df++;
@@ -401,7 +452,7 @@ function huntState(){if(!cfg.hunt)return['꺼짐','off'];if(!stream)return['대�
 function updateStatus(){if(!R)return;var r=runeState(),h=huntState();
   $('runeS').textContent=r[0];$('runeS').className='status'+(r[1]==='alert'?' alert':r[1]==='warn'?' warn':'');
   $('huntS').textContent=h[0];$('huntS').className='status'+(h[1]==='alert'?' alert':'');
-  $('runeM').textContent='보라색 픽셀: '+(stream&&cfg.rune&&R.n!==null?R.n:'-');
+  $('runeM').textContent=stream&&cfg.rune&&R.n!==null?'보라색 픽셀: '+R.n+' · 마름모: '+R.dia+'개':'보라색 픽셀: -';
   $('huntM').textContent='변화 없는 시간: '+(stream&&cfg.hunt?H.sec+'초':'-');
   $('pause').textContent=paused?'▶ 다시 시작':'⏸ 전체 정지';$('pause').className=paused?'primary':'danger';
   renderPip(r,h)}
