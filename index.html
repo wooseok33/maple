@@ -323,12 +323,13 @@ PIP 창의 ‘재시작’으로 바로 다시 시작할 수 있습니다.
   </section>
   <!-- 버프 -->
   <section class="card">
-    <div class="mh"><h3><span class="ico">✦</span>버프 알림<span class="info l" tabindex="0" data-tip="등록한 버프 아이콘이 사라지면(일치도가 기준 아래로 떨어지면) 알려줍니다.\n영역 설정의 ‘버프 아이콘’을 누르고 아이콘 하나에 딱 맞게 드래그하세요. (최대 4개)\n아이콘이 옆으로 밀려도 주변에서 찾아냅니다.">i</span></h3><span class="status" id="buffS">미설정</span></div>
+    <div class="mh"><h3><span class="ico">✦</span>버프 알림<span class="info l" tabindex="0" data-tip="남은 시간이 분 단위·분:초로 표시되는 동안은 유지로 보고,\n초 단위(예: 9)로 바뀌면 2초마다 추적하다 아이콘이 사라지면 알려줍니다.\n영역 설정의 ‘버프 아이콘’을 누르고 아이콘 하나에 딱 맞게 드래그하세요. (최대 4개)\n아이콘이 옆으로 밀려도 주변에서 찾아냅니다.">i</span></h3><span class="status" id="buffS">미설정</span></div>
     <ul class="blist" id="buffList"></ul>
     <details class="set"><summary>설정</summary>
       <div class="sgrid">
-        <div class="fr"><span>종료 판정 <span class="info l" tabindex="0" data-tip="등록한 아이콘과 무늬가 이만큼 이상 달라지면 종료로 봅니다.\n시간이 지나며 어두워지는 회색 막과 남은 분 숫자는 자동으로 무시합니다.\n오탐이 있으면 올리고, 종료를 놓치면 내리세요.">i</span> <b><span id="buffChangeV"></span>% 변화</b></span><input type="range" id="buffChange" min="20" max="90"></div>
-        <div class="fl"><span>유지 시간 <span class="info l" tabindex="0" data-tip="종료 직전 아이콘이 깜빡여도 오탐이 나지 않도록\n이 시간 동안 계속 사라져 있어야 종료로 판단합니다.">i</span></span><span class="row"><input type="number" id="buffHold" min="1" max="10"><span class="u">초</span></span></div>
+        <div class="fr"><span>종료 판정 <span class="info l" tabindex="0" data-tip="등록한 아이콘과 무늬가 이만큼 이상 달라지면 종료로 봅니다.\n회색 막, 남은 분 숫자, 10분 이하의 노란 초 단위 숫자는 자동으로 무시합니다.\n권장 30% (실측: 같은 버프 88% 이상 / 사라진 경우 35% 이하).\n오탐이 있으면 올리고, 종료를 놓치면 내리세요.">i</span> <b><span id="buffChangeV"></span>% 변화</b></span><input type="range" id="buffChange" min="10" max="90"></div>
+        <label class="chk"><input type="checkbox" id="buffEarly">초 단위 전에 사라져도 알림<span class="info l" tabindex="0" data-tip="기본은 남은 시간이 초 단위(예: 9)로 바뀐 버프만 종료를 감시합니다.\n켜면 분 단위·분:초 표시 중에 갑자기 사라진 경우(사망, 해제 등)도 알립니다.">i</span></label>
+        <div class="fl"><span>유지 시간 <span class="info l" tabindex="0" data-tip="초 단위 단계에서 2초마다 확인하며,\n이 시간 동안 계속 사라져 있어야 종료로 판단합니다.">i</span></span><span class="row"><input type="number" id="buffHold" min="1" max="10"><span class="u">초</span></span></div>
         <div class="fl"><span>알림음</span><span class="row"><select id="buffSnd"></select><button class="icon" id="buffTest" title="미리 듣기">▶</button></span></div>
         <div class="fr"><span>알림 횟수 <b id="buffCntV"></b></span><input type="range" id="buffCnt" min="0" max="3"></div>
         <div class="fl"><span>반복 간격</span><span class="row"><input type="number" id="buffInt" min="1" max="60"><span class="u">초</span></span></div>
@@ -363,14 +364,14 @@ var v=$('v'),ov=$('ov'),octx=ov.getContext('2d');
 var work=document.createElement('canvas'),wctx=work.getContext('2d',{willReadFrequently:true});
 
 /* ---------- 설정 ---------- */
-var DEF={rune:null,hunt:null,buffs:[],buffChange:50,buffHold:2,buffCnt:1,buffInt:5,buffSnd:'beep',runeMode:'sample',runeTpl:null,runeColor:'#dd66ff',runeTol:70,runeMinPx:3,runeSim:70,
+var DEF={rune:null,hunt:null,buffs:[],buffEarly:false,buffChange:30,buffHold:2,buffCnt:1,buffInt:5,buffSnd:'beep',runeMode:'sample',runeTpl:null,runeColor:'#dd66ff',runeTol:70,runeMinPx:3,runeSim:70,
   runeMin:2,runeMax:40,runeShape:70,runeHold:1,runeCnt:0,runeInt:5,runeSnd:'quiet',
   huntMode:'exp',huntSec:15,huntBr:170,huntD:5,huntCnt:1,huntInt:5,huntResume:2,huntSnd:'quiet',
   timerMin:30,timerSec:0,timerCnt:1,timerInt:5,timerSnd:'chime',timerAuto:false};
-var RANGE={buffChange:[20,90],buffHold:[1,10],buffCnt:[0,3],buffInt:[1,60],runeTol:[20,150],runeMinPx:[1,100],runeSim:[50,98],runeMin:[1,30],runeMax:[6,80],runeShape:[50,95],runeHold:[0.5,5],runeCnt:[0,3],runeInt:[1,60],
+var RANGE={buffChange:[10,90],buffHold:[1,10],buffCnt:[0,3],buffInt:[1,60],runeTol:[20,150],runeMinPx:[1,100],runeSim:[50,98],runeMin:[1,30],runeMax:[6,80],runeShape:[50,95],runeHold:[0.5,5],runeCnt:[0,3],runeInt:[1,60],
   huntSec:[1,600],huntBr:[120,255],huntD:[1,40],huntCnt:[0,3],huntInt:[1,60],huntResume:[1,5],
   timerMin:[0,600],timerSec:[0,59],timerCnt:[0,3],timerInt:[1,60]};
-var NUM=Object.keys(RANGE),STR=['runeSnd','huntSnd','timerSnd','buffSnd'],BOOL=['timerAuto'];
+var NUM=Object.keys(RANGE),STR=['runeSnd','huntSnd','timerSnd','buffSnd'],BOOL=['timerAuto','buffEarly'];
 var SOUNDS={quiet:'조용한 띵동',chime:'차임벨',beep:'경보 삐삐',siren:'사이렌',clock:'자명종',coin:'코인 띠링',bell:'종소리',
   marimba:'마림바',whistle:'호루라기',rise:'상승음',horn:'경적',pulse:'펄스 경보',loud:'큰 음성'};
 var LIM=[1,3,5,Infinity],LBL=['1번만','3번까지','5번까지','사라질 때까지 계속'],TLBL=['1번만','3번까지','5번까지','재시작·초기화할 때까지 계속'];
@@ -821,11 +822,11 @@ function tick(){if(paused)return;var now=Date.now();
   if(!stream||!v.videoWidth)return;var ch=false;
   if(cfg.hunt&&now>=nextHunt){nextHunt=now+1500;checkHunt(now);ch=true}
   if(cfg.rune&&now>=nextRune){checkRune(now);ch=true}
-  if(cfg.buffs.length&&now>=nextBuff){nextBuff=now+1000;checkBuffs(now);ch=true}
+  if(cfg.buffs.length&&now>=nextBuff){nextBuff=now+2000;checkBuffs(now);ch=true}
   if(ch)updateStatus()}
 
 /* ---------- 버프 ---------- */
-function newBS(){return{sim:null,seen:false,endSince:0,ended:false,cnt:0,last:0}}
+function newBS(){return{sim:null,seen:false,endSince:0,ended:false,cnt:0,last:0,phase:null,lost:false}}
 $('pickBuff').onclick=function(){if(cfg.buffs.length>=4){$('hint').textContent='버프는 최대 4개까지 등록할 수 있습니다. 필요 없는 버프를 지우고 다시 등록하세요.';return}
   openZoom('buff','버프 아이콘 등록 — 버프 아이콘 하나에 딱 맞게 드래그하세요')};
 function registerBuff(r){var g=grab(r);if(!g||g.w<4||g.h<4){$('hint').textContent='아이콘이 너무 작습니다. 확대해서 다시 드래그하세요.';return}
@@ -834,45 +835,80 @@ function registerBuff(r){var g=grab(r);if(!g||g.w<4||g.h<4){$('hint').textConten
   var n=1,names=cfg.buffs.map(function(b){return b.name});while(names.indexOf('버프 '+n)>=0)n++;
   cfg.buffs.push({name:'버프 '+n,tpl:{w:g.w,h:g.h,px:px},pos:r});BS.push(newBS());renderBuffs();updateStatus();
   $('hint').textContent='‘버프 '+n+'’를 등록했습니다. 이름은 버프 카드에서 바꿀 수 있고, 프리셋에 저장해 두세요.'}
-/* 버프 비교 방식: 흑백 '무늬' 비교(정규화 상관 — 전체가 어두워지거나 밝아져도 점수 유지).
-   메이플 버프 아이콘은 시간이 지나며 아래부터 회색 막이 차오르고 남은 분 숫자가 바뀌므로
-   ① 모든 아이콘에 공통인 테두리와 숫자 자리(왼쪽 아래)는 제외
-   ② 아이콘을 가로 6줄로 나눠, 위쪽 4줄 각각의 무늬 일치도 중 3번째로 높은 값을 사용
-      (회색 막 경계는 한 번에 한 줄에만 걸리므로 같은 버프는 높게 유지되고, 다른 아이콘은 여러 줄이 동시에 맞기 어려움) */
+/* 버프 비교 방식 — 메이플 버프 아이콘의 시간 표시를 무시하도록 설계
+   ① 남은 분 숫자(왼쪽 아래)와 모든 아이콘 공통 테두리는 제외
+   ② 10분 이하에서 아이콘 가운데를 덮는 노란 숫자와 검은 외곽선은 매번 찾아서 제외
+   ③ 아래부터 차오르는 회색 막은 '경계 높이'를 자동으로 찾아 위/아래를 따로 무늬 비교(정규화 상관)한 뒤 합산 → 막의 영향 상쇄
+   ④ 아이콘은 옆으로만 밀리므로 좌우로 아이콘 3~4칸, 위아래는 ±2px만 탐색 */
 var BCACHE=new WeakMap();
-function prepBuff(b){var c=BCACHE.get(b);if(c)return c;var T=b.tpl,w=T.w,h=T.h,g=new Float32Array(w*h);
-  for(var i=0;i<w*h;i++)g[i]=T.px[i*3]*.299+T.px[i*3+1]*.587+T.px[i*3+2]*.114;
-  var e=Math.max(2,Math.round(Math.min(w,h)*.12)),xn=Math.round(w*.55),NB=6,step=(h-2*e)/NB,bands=[];
-  for(var q=0;q<4;q++){var a=Math.round(e+q*step),z=Math.round(e+(q+1)*step),xs=z>h*.6?xn:e,ox=[],oy=[],vals=[];
-    for(var y=a;y<z;y++)for(var x=xs;x<w-e;x++){ox.push(x);oy.push(y);vals.push(g[y*w+x])}
-    var n=vals.length,m=0;vals.forEach(function(v){m+=v});m/=n||1;var t=new Float32Array(n),ss=0;
-    for(var k=0;k<n;k++){t[k]=vals[k]-m;ss+=t[k]*t[k]}
-    if(n>=8&&Math.sqrt(ss)>2*Math.sqrt(n))bands.push({ox:ox,oy:oy,t:t,n:n,norm:Math.sqrt(ss)})}   /* 무늬가 거의 없는 줄은 제외 */
-  c={w:w,h:h,bands:bands,pick:Math.min(2,bands.length-1)};BCACHE.set(b,c);return c}
-/* 등록 위치 주변(좌우로 아이콘 3~4칸, 위아래 반 칸)에서 가장 비슷한 곳을 찾아 일치도(0~1) 반환 */
-function buffSim(b){var W=v.videoWidth,Hh=v.videoHeight;if(!W)return null;var P=prepBuff(b),tw=P.w,th=P.h;if(!P.bands.length)return null;
-  var x0=Math.round(b.pos.x*W),y0=Math.round(b.pos.y*Hh),bx=Math.max(0,x0-3*tw),by=Math.max(0,y0-Math.ceil(th/2)),
-    bx1=Math.min(W,x0+4*tw),by1=Math.min(Hh,y0+th+Math.ceil(th/2));
+function isText(r,g,b){return (r>140&&g>140&&b<110)||Math.max(r,g,b)<55}
+/* 세부 무늬만 남기기: 각 점에서 주변 3x3 평균을 뺌 (큰 명암 배치·전체 밝기 변화 제거) */
+function hipass(g,w,h){var o=new Float32Array(w*h);for(var y=0;y<h;y++)for(var x=0;x<w;x++){var s=0,n=0;
+  for(var dy=-1;dy<=1;dy++)for(var dx=-1;dx<=1;dx++){var yy=y+dy,xx=x+dx;if(yy<0||xx<0||yy>=h||xx>=w)continue;s+=g[yy*w+xx];n++}o[y*w+x]=g[y*w+x]-s/n}return o}
+function dilate(m,w,h){var o=new Uint8Array(m);for(var y=0;y<h;y++)for(var x=0;x<w;x++){if(!m[y*w+x])continue;
+  if(x>0)o[y*w+x-1]=1;if(x<w-1)o[y*w+x+1]=1;if(y>0)o[(y-1)*w+x]=1;if(y<h-1)o[(y+1)*w+x]=1}return o}
+function prepBuff(b){var c=BCACHE.get(b);if(c)return c;var T=b.tpl,w=T.w,h=T.h,g=new Float32Array(w*h),tm=new Uint8Array(w*h),base=new Uint8Array(w*h);
+  for(var i=0;i<w*h;i++){var r=T.px[i*3],gg=T.px[i*3+1],bb=T.px[i*3+2];g[i]=r*.299+gg*.587+bb*.114;tm[i]=isText(r,gg,bb)?1:0}
+  tm=dilate(tm,w,h);var gh=hipass(g,w,h),e=Math.max(2,Math.round(Math.min(w,h)*.1)),nb=0;
+  for(var y=e;y<h-e;y++)for(var x=e;x<w-e;x++){if(y>=h*.6&&x<w*.55)continue;base[y*w+x]=1;nb++}
+  var artY=new Uint8Array(w*h),yc=0;for(var j=0;j<w*h;j++)if(isYellow(T.px[j*3],T.px[j*3+1],T.px[j*3+2])){artY[j]=1;yc++}
+  c={w:w,h:h,g:g,gh:gh,tm:tm,base:base,nb:nb,e:e,artY:artY};
+  /* 템플릿에 노란 '숫자'가 찍혀 있으면(분:초·초 표시 중 등록) 그림 노란색 제외는 하지 않음 */
+  var tp=timePhase(T.px.reduce(function(a,v,k){if(k%3===2){a.push(T.px[k-2],T.px[k-1],v,255)}return a},[]),w,0,0,{w:w,h:h,e:e,artY:new Uint8Array(w*h)});
+  if(tp!=='min')c.artY=new Uint8Array(w*h);
+  BCACHE.set(b,c);return c}
+function nccOf(n,sa,saa,st,stt,sat){if(n<2)return 0;var va=saa-sa*sa/n,vt=stt-st*st/n;if(va<=1e-6||vt<=1e-6)return 0;return Math.max(0,(sat-sa*st/n)/Math.sqrt(va*vt))}
+function buffSim(b){var W=v.videoWidth,Hh=v.videoHeight;if(!W)return null;var P=prepBuff(b),tw=P.w,th=P.h,e=P.e;
+  var x0=Math.round(b.pos.x*W),y0=Math.round(b.pos.y*Hh),bx=Math.max(0,x0-3*tw),by=Math.max(0,y0-2),
+    bx1=Math.min(W,x0+4*tw),by1=Math.min(Hh,y0+th+2);
   if(bx1-bx<tw||by1-by<th)return null;
-  var g=grab({x:bx/W,y:by/Hh,w:(bx1-bx)/W,h:(by1-by)/Hh}),d=g.d,w=g.w,h=g.h;if(w<tw||h<th)return null;
-  var G=new Float32Array(w*h);for(var i=0,k=0;k<w*h;i+=4,k++)G[k]=d[i]*.299+d[i+1]*.587+d[i+2]*.114;
-  function score(x,y){var vs=[];
-    for(var q=0;q<P.bands.length;q++){var bd=P.bands[q],sa=0,saa=0,sat=0;
-      for(var k=0;k<bd.n;k++){var a=G[(y+bd.oy[k])*w+x+bd.ox[k]];sa+=a;saa+=a*a;sat+=a*bd.t[k]}
-      var va=saa-sa*sa/bd.n;vs.push(va>1e-6?Math.max(0,sat/(Math.sqrt(va)*bd.norm)):0)}
-    vs.sort(function(p,q){return q-p});return vs[P.pick]||0}
-  var best=0;for(var y=0;y<=h-th;y++)for(var x=0;x<=w-tw;x++){var sc=score(x,y);if(sc>best)best=sc}
-  return Math.max(0,Math.min(1,best))}
+  var gr=grab({x:bx/W,y:by/Hh,w:(bx1-bx)/W,h:(by1-by)/Hh}),d=gr.d,w=gr.w,h=gr.h;if(w<tw||h<th)return null;
+  var G=new Float32Array(w*h),FM=new Uint8Array(w*h);
+  for(var i=0,k=0;k<w*h;i+=4,k++){G[k]=d[i]*.299+d[i+1]*.587+d[i+2]*.114;FM[k]=isText(d[i],d[i+1],d[i+2])?1:0}
+  FM=dilate(FM,w,h);
+  var Gh=hipass(G,w,h),R=new Float64Array(th*6),best=0,bx2=-1,by2=-1,need=Math.max(30,P.nb*.3);
+  /* 한 위치에서의 점수: 회색 막 경계를 자동으로 찾아 위/아래를 따로 비교(정규화 상관)한 뒤 가중 평균 */
+  function at(px,py,F,Tg){R.fill(0);var N=0;
+    for(var y=e;y<th-e;y++){var o=y*6;for(var x=e;x<tw-e;x++){var ti=y*tw+x;if(!P.base[ti]||P.tm[ti])continue;var fi=(py+y)*w+px+x;if(FM[fi])continue;
+      var a=F[fi],t=Tg[ti];R[o]++;R[o+1]+=a;R[o+2]+=a*a;R[o+3]+=t;R[o+4]+=t*t;R[o+5]+=a*t;N++}}
+    if(N<need)return -1;
+    var S=[0,0,0,0,0,0];for(var y2=0;y2<th;y2++)for(var q=0;q<6;q++)S[q]+=R[y2*6+q];
+    var sc=nccOf(S[0],S[1],S[2],S[3],S[4],S[5]),U=[0,0,0,0,0,0];
+    for(var bnd=e;bnd<th-e-1;bnd++){for(var q2=0;q2<6;q2++)U[q2]+=R[bnd*6+q2];
+      var n1=U[0],n2=S[0]-n1;if(n1<15||n2<15)continue;
+      var vt1=(U[4]-U[3]*U[3]/n1)/n1,vt2=((S[4]-U[4])-(S[3]-U[3])*(S[3]-U[3])/n2)/n2;if(vt1<1||vt2<1)continue;
+      var r1=nccOf(n1,U[1],U[2],U[3],U[4],U[5]),r2=nccOf(n2,S[1]-U[1],S[2]-U[2],S[3]-U[3],S[4]-U[4],S[5]-U[5]);
+      var s2=(n1*r1+n2*r2)/(n1+n2);if(s2>sc)sc=s2}
+    return sc}
+  /* 큰 명암 배치(G)와 세부 무늬(Gh) 두 방식이 모두 맞아야 같은 아이콘으로 인정 → 낮은 쪽 점수 사용 */
+  for(var py=0;py<=h-th;py++)for(var px=0;px<=w-tw;px++){var s1=at(px,py,Gh,P.gh);if(s1<0||s1<=best)continue;
+    var s0=at(px,py,G,P.g);var sc=Math.min(s0,s1);if(sc>best){best=sc;bx2=px;by2=py}}
+  return{s:Math.min(1,best),phase:bx2<0?null:timePhase(d,w,bx2,by2,P)}}
+/* 아이콘 위 노란 숫자(검은 외곽선이 붙은 노란 픽셀)의 폭으로 남은 시간 표시 형태 판정
+   없음 → 'min'(분 단위)  ·  아이콘 폭의 70% 이상 → 'mmss'(분:초)  ·  그보다 좁음 → 'sec'(초 단위, 곧 종료) */
+function isYellow(r,g,b){return r>140&&g>140&&b<110}
+function timePhase(d,w,px,py,P){var tw=P.w,th=P.h,e=P.e,cnt=0,xmin=1e9,xmax=-1;
+  for(var y=e;y<th-e;y++)for(var x=e;x<tw-e;x++){if(P.artY[y*tw+x])continue;var q=((py+y)*w+px+x)*4;
+    if(!isYellow(d[q],d[q+1],d[q+2]))continue;var dark=false;
+    for(var dy=-1;dy<=1&&!dark;dy++)for(var dx=-1;dx<=1;dx++){var qq=((py+y+dy)*w+px+x+dx)*4;if(qq>=0&&qq<d.length&&Math.max(d[qq],d[qq+1],d[qq+2])<90){dark=true;break}}
+    if(!dark)continue;cnt++;if(x<xmin)xmin=x;if(x>xmax)xmax=x}
+  if(cnt<6)return'min';return (xmax-xmin+1)/(tw-2*e)>=0.7?'mmss':'sec'}
+/* 버프 판정 규칙
+   ① 분 단위 표시 / ② 분:초 표시 → 버프 유지
+   ③ 초 단위 표시에 들어가면 2초 간격으로 추적하다가, 아이콘 일치도가 기준 아래로 떨어지면 종료 알림
+   (설정의 '초 단위 전에 사라져도 알림'을 켜면 ①·② 단계에서 갑자기 사라진 경우도 알림) */
 function checkBuffs(now){var thr=1-cfg.buffChange/100;
-  cfg.buffs.forEach(function(b,i){var st=BS[i]||(BS[i]=newBS()),s=buffSim(b);if(s===null)return;st.sim=s;
-    if(s>=thr){st.seen=true;st.endSince=0;if(st.ended){st.ended=false;st.cnt=0}}
+  cfg.buffs.forEach(function(b,i){var st=BS[i]||(BS[i]=newBS()),res=buffSim(b);if(!res)return;var s=res.s;st.sim=s;
+    if(s>=thr){st.seen=true;st.lost=false;st.endSince=0;if(res.phase)st.phase=res.phase;if(st.ended){st.ended=false;st.cnt=0}}
+    else if(st.seen&&st.phase!=='sec'&&!cfg.buffEarly){st.lost=true;st.endSince=0}
     else if(st.seen){if(!st.endSince)st.endSince=now;
       if(now-st.endSince>=cfg.buffHold*1000){st.ended=true;
         if(st.cnt<LIM[cfg.buffCnt]&&(st.cnt===0||now-st.last>=cfg.buffInt*1000)){st.cnt++;st.last=now;
           notify('buff',b.name+' 종료 · 일치도 '+Math.round(s*100)+'%'+(st.cnt>1?' ('+st.cnt+'번째)':''))}}}})}
 function buffState(){var n=cfg.buffs.length;if(!n)return['미설정','off'];if(!stream)return['대기 중','off'];if(paused)return['일시정지','off'];
-  var end=[],wait=0;cfg.buffs.forEach(function(b,i){var st=BS[i];if(!st)return;if(st.ended)end.push(b.name);else if(!st.seen)wait++});
+  var end=[],wait=0,soon=[];cfg.buffs.forEach(function(b,i){var st=BS[i];if(!st)return;if(st.ended)end.push(b.name);else if(!st.seen)wait++;else if(st.phase==='sec')soon.push(b.name)});
   if(end.length)return[end.join(', ')+' 종료','alert'];
+  if(soon.length)return['곧 종료: '+soon.join(', '),'warn'];
   if(wait)return['아이콘 확인 중 ('+(n-wait)+'/'+n+')','warn'];
   return['유지 중 '+n+'개','ok']}
 function renderBuffs(){var ul=$('buffList');ul.textContent='';
@@ -888,7 +924,9 @@ function renderBuffs(){var ul=$('buffList');ul.textContent='';
     li.appendChild(c);li.appendChild(info);li.appendChild(x);ul.appendChild(li)});
   updateBuffRows()}
 function updateBuffRows(){var lis=$('buffList').children;cfg.buffs.forEach(function(b,i){var li=lis[i],st=BS[i];if(!li||!st)return;
-  var t=!stream?'화면 연결 대기':paused?'일시정지':st.ended?'종료됨 · 다시 켜면 자동 복구':st.sim===null?'확인 중':!st.seen?'아이콘을 찾는 중 · 일치도 '+Math.round(st.sim*100)+'%':'유지 중 · 일치도 '+Math.round(st.sim*100)+'%';
+  var pct=st.sim===null?'':' · '+Math.round(st.sim*100)+'%',PH={min:'분 단위',mmss:'분:초',sec:'초 단위 · 2초마다 추적'};
+  var t=!stream?'화면 연결 대기':paused?'일시정지':st.ended?'종료됨 · 다시 켜면 자동 복구':st.sim===null?'확인 중':!st.seen?'아이콘을 찾는 중'+pct
+    :st.lost?'아이콘 안 보임 (초 단위 전이라 알림 없음)'+pct:st.phase==='sec'?'곧 종료 · '+PH.sec+pct:'유지 중 · '+(PH[st.phase]||'')+pct;
   li.className=st.ended&&stream&&!paused?'end':'';li.querySelector('.bs').textContent=t})}
 
 /* ---------- 상태 표시 ---------- */
