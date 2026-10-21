@@ -82,7 +82,20 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
 #hint:empty{display:none}
 
 /* 모듈 */
-.mods{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start}
+.mods{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;align-items:start}
+@media(max-width:1180px){.mods{grid-template-columns:repeat(2,1fr)}}
+.blist{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.blist li{display:flex;align-items:center;gap:10px;padding:8px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.blist li.end{border-color:rgba(255,95,95,.5);background:rgba(255,95,95,.07)}
+.blist canvas{width:32px;height:32px;border-radius:6px;background:#000;image-rendering:pixelated;flex:none}
+.blist .bi{flex:1;min-width:0;display:grid;gap:2px}
+.blist input{height:26px;font-size:13px;font-weight:600;padding:0 6px;border-color:transparent;background:transparent;width:100%}
+.blist input:hover,.blist input:focus{border-color:var(--line2);background:var(--panel)}
+.blist .bs{font-size:12px;color:var(--mute);padding-left:7px}
+.blist li.end .bs{color:var(--bad);font-weight:600}
+.blist .x{width:28px;height:28px;padding:0;border-color:transparent;background:transparent;color:var(--faint)}
+.blist .x:hover{color:var(--bad)}
+.blist .empty{justify-content:center;color:var(--faint);font-size:12px;border-style:dashed;padding:14px}
 @media(max-width:980px){.mods{grid-template-columns:1fr 1fr}}
 @media(max-width:680px){.mods{grid-template-columns:1fr}}
 .mh{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px}
@@ -139,7 +152,7 @@ details.adv[open]{padding-bottom:12px}
 .log li:first-child{border-top:0}
 .log time{color:var(--faint);font-variant-numeric:tabular-nums;flex:none}
 .log .k{flex:none;font-weight:700;min-width:3em}
-.log .rune .k{color:var(--rune)}.log .hunt .k{color:var(--bad)}.log .timer .k{color:var(--timer)}
+.log .rune .k{color:var(--rune)}.log .hunt .k{color:var(--bad)}.log .timer .k{color:var(--timer)}.log .buff .k{color:var(--warn)}
 .log .sys{color:var(--faint)}.log .empty{color:var(--faint)}
 .foot{text-align:center;color:var(--faint);font-size:12px;margin-top:22px}
 
@@ -202,6 +215,7 @@ details.adv[open]{padding-bottom:12px}
         <button class="chip" id="pickRune" disabled><i></i><span class="lbl">미니맵</span></button>
         <button class="chip" id="pickHunt" disabled><i></i><span class="lbl">경험치바</span></button>
         <button class="chip" id="pickTpl" disabled><i></i><span class="lbl">룬 아이콘</span></button>
+        <button class="chip" id="pickBuff" disabled><i></i><span class="lbl">버프 아이콘 +</span></button>
       </div>
       <div class="row">
         <button class="ghost sm" id="togglePrev">미리보기 숨기기</button>
@@ -307,6 +321,20 @@ PIP 창의 ‘재시작’으로 바로 다시 시작할 수 있습니다.
       </div>
     </details>
   </section>
+  <!-- 버프 -->
+  <section class="card">
+    <div class="mh"><h3><span class="ico">✦</span>버프 알림<span class="info l" tabindex="0" data-tip="등록한 버프 아이콘이 사라지면(일치도가 기준 아래로 떨어지면) 알려줍니다.\n영역 설정의 ‘버프 아이콘’을 누르고 아이콘 하나에 딱 맞게 드래그하세요. (최대 4개)\n아이콘이 옆으로 밀려도 주변에서 찾아냅니다.">i</span></h3><span class="status" id="buffS">미설정</span></div>
+    <ul class="blist" id="buffList"></ul>
+    <details class="set"><summary>설정</summary>
+      <div class="sgrid">
+        <div class="fr"><span>종료 판정 <span class="info l" tabindex="0" data-tip="등록한 아이콘과 무늬가 이만큼 이상 달라지면 종료로 봅니다.\n시간이 지나며 어두워지는 회색 막과 남은 분 숫자는 자동으로 무시합니다.\n오탐이 있으면 올리고, 종료를 놓치면 내리세요.">i</span> <b><span id="buffChangeV"></span>% 변화</b></span><input type="range" id="buffChange" min="20" max="90"></div>
+        <div class="fl"><span>유지 시간 <span class="info l" tabindex="0" data-tip="종료 직전 아이콘이 깜빡여도 오탐이 나지 않도록\n이 시간 동안 계속 사라져 있어야 종료로 판단합니다.">i</span></span><span class="row"><input type="number" id="buffHold" min="1" max="10"><span class="u">초</span></span></div>
+        <div class="fl"><span>알림음</span><span class="row"><select id="buffSnd"></select><button class="icon" id="buffTest" title="미리 듣기">▶</button></span></div>
+        <div class="fr"><span>알림 횟수 <b id="buffCntV"></b></span><input type="range" id="buffCnt" min="0" max="3"></div>
+        <div class="fl"><span>반복 간격</span><span class="row"><input type="number" id="buffInt" min="1" max="60"><span class="u">초</span></span></div>
+      </div>
+    </details>
+  </section>
 </div>
 
 <section class="card logcard">
@@ -335,18 +363,18 @@ var v=$('v'),ov=$('ov'),octx=ov.getContext('2d');
 var work=document.createElement('canvas'),wctx=work.getContext('2d',{willReadFrequently:true});
 
 /* ---------- 설정 ---------- */
-var DEF={rune:null,hunt:null,runeMode:'sample',runeTpl:null,runeColor:'#dd66ff',runeTol:70,runeMinPx:3,runeSim:70,
+var DEF={rune:null,hunt:null,buffs:[],buffChange:50,buffHold:2,buffCnt:1,buffInt:5,buffSnd:'beep',runeMode:'sample',runeTpl:null,runeColor:'#dd66ff',runeTol:70,runeMinPx:3,runeSim:70,
   runeMin:2,runeMax:40,runeShape:70,runeHold:1,runeCnt:0,runeInt:5,runeSnd:'quiet',
   huntMode:'exp',huntSec:15,huntBr:170,huntD:5,huntCnt:1,huntInt:5,huntResume:2,huntSnd:'quiet',
   timerMin:30,timerSec:0,timerCnt:1,timerInt:5,timerSnd:'chime',timerAuto:false};
-var RANGE={runeTol:[20,150],runeMinPx:[1,100],runeSim:[50,98],runeMin:[1,30],runeMax:[6,80],runeShape:[50,95],runeHold:[0.5,5],runeCnt:[0,3],runeInt:[1,60],
+var RANGE={buffChange:[20,90],buffHold:[1,10],buffCnt:[0,3],buffInt:[1,60],runeTol:[20,150],runeMinPx:[1,100],runeSim:[50,98],runeMin:[1,30],runeMax:[6,80],runeShape:[50,95],runeHold:[0.5,5],runeCnt:[0,3],runeInt:[1,60],
   huntSec:[1,600],huntBr:[120,255],huntD:[1,40],huntCnt:[0,3],huntInt:[1,60],huntResume:[1,5],
   timerMin:[0,600],timerSec:[0,59],timerCnt:[0,3],timerInt:[1,60]};
-var NUM=Object.keys(RANGE),STR=['runeSnd','huntSnd','timerSnd'],BOOL=['timerAuto'];
+var NUM=Object.keys(RANGE),STR=['runeSnd','huntSnd','timerSnd','buffSnd'],BOOL=['timerAuto'];
 var SOUNDS={quiet:'조용한 띵동',chime:'차임벨',beep:'경보 삐삐',siren:'사이렌',clock:'자명종',coin:'코인 띠링',bell:'종소리',
   marimba:'마림바',whistle:'호루라기',rise:'상승음',horn:'경적',pulse:'펄스 경보',loud:'큰 음성'};
 var LIM=[1,3,5,Infinity],LBL=['1번만','3번까지','5번까지','사라질 때까지 계속'],TLBL=['1번만','3번까지','5번까지','재시작·초기화할 때까지 계속'];
-var cfg=Object.assign({},DEF),vol=70,paused=false,pip=null;
+var cfg=Object.assign({},DEF),vol=70,paused=false,pip=null;cfg.buffs=[];
 var presets=Object.create(null),last='',logs=[];
 
 function clampNum(x,a,b){x=parseFloat(x);return isFinite(x)?Math.min(b,Math.max(a,x)):null}
@@ -361,11 +389,13 @@ function clean(p){var o=Object.assign({},DEF);if(!p||typeof p!=='object')return 
   if(typeof p.runeColor==='string'&&/^#[0-9a-f]{6}$/i.test(p.runeColor))o.runeColor=p.runeColor.toLowerCase();
   o.runeTpl=okTpl(p.runeTpl);
   /* huntMode가 없던 예전 프리셋은 MP 영역(직접 지정) 방식으로 유지 */
+  o.buffs=Array.isArray(p.buffs)?p.buffs.map(function(b){if(!b||typeof b!=='object')return null;var t=okTpl(b.tpl,80),r=okRect(b.pos);
+    return t&&r?{name:String(b.name||'버프').slice(0,20),tpl:t,pos:r}:null}).filter(Boolean).slice(0,4):[];
   o.huntMode=p.huntMode==='exp'||p.huntMode==='box'?p.huntMode:(p.hunt?'box':'exp');
   o.rune=okRect(p.rune);o.hunt=okRect(p.hunt);return o}
 var MODES=['sample','color','diamond'];
-function okTpl(t){if(!t||typeof t!=='object')return null;var w=t.w,h=t.h;
-  if(!(w>=2&&w<=60&&h>=2&&h<=60&&w%1===0&&h%1===0)||!Array.isArray(t.px)||t.px.length!==w*h*3)return null;
+function okTpl(t,mx){mx=mx||60;if(!t||typeof t!=='object')return null;var w=t.w,h=t.h;
+  if(!(w>=2&&w<=mx&&h>=2&&h<=mx&&w%1===0&&h%1===0)||!Array.isArray(t.px)||t.px.length!==w*h*3)return null;
   if(!t.px.every(function(n){return typeof n==='number'&&n>=0&&n<=255}))return null;
   return{w:w,h:h,px:t.px.map(function(n){return n|0}),vw:+t.vw||0,vh:+t.vh||0}}
 
@@ -382,7 +412,8 @@ function persist(){try{localStorage.setItem('maple-presets',JSON.stringify(prese
 STR.forEach(function(k){var s=$(k);Object.keys(SOUNDS).forEach(function(id){
   var o=document.createElement('option');o.value=id;o.textContent=SOUNDS[id];s.appendChild(o)})});
 function show(id){var o=$(id+'V');if(!o)return;
-  o.textContent=id==='timerCnt'?TLBL[$(id).value]:id==='huntCnt'?HLBL[$(id).value]:/Cnt$/.test(id)?LBL[$(id).value]:$(id).value}
+  o.textContent=id==='timerCnt'?TLBL[$(id).value]:id==='huntCnt'?HLBL[$(id).value]:id==='buffCnt'?BLBL[$(id).value]:/Cnt$/.test(id)?LBL[$(id).value]:$(id).value}
+var BLBL=['1번만','3번까지','5번까지','버프를 다시 켤 때까지 계속'];
 var HLBL=['1번만','3번까지','5번까지','사냥 재개될 때까지 계속'];
 function fill(){NUM.concat(STR).forEach(function(k){$(k).value=cfg[k];show(k)});
   BOOL.forEach(function(k){$(k).checked=!!cfg[k]});$('vol').value=vol;
@@ -469,7 +500,7 @@ var PLAY={
 };
 $('boost').value=String(boost);
 $('boost').onchange=function(){boost=+$('boost').value;try{localStorage.setItem('maple-boost',boost)}catch(e){}if(master)master.gain.value=gainVal()};
-var SPEECH={rune:'룬이 나타났어요. 확인해주세요',hunt:'사냥이 멈췄어요. 확인해주세요',timer:'타이머 시간이 다 됐어요'};
+var SPEECH={rune:'룬이 나타났어요. 확인해주세요',hunt:'사냥이 멈췄어요. 확인해주세요',timer:'타이머 시간이 다 됐어요',buff:'버프가 끝났어요. 확인해주세요'};
 function speak(text){try{speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(text);u.lang='ko-KR';u.volume=vol/100;speechSynthesis.speak(u)}
   catch(e){sound('','quiet')}}
 function sound(kind,mode){
@@ -477,10 +508,11 @@ function sound(kind,mode){
   if(!ac())return;try{(PLAY[mode]||PLAY.quiet)(actx.currentTime+0.03)}catch(e){}}
 $('runeTest').onclick=function(){sound('rune',$('runeSnd').value)};
 $('huntTest').onclick=function(){sound('hunt',$('huntSnd').value)};
+$('buffTest').onclick=function(){sound('buff',$('buffSnd').value)};
 $('timerTest').onclick=function(){sound('timer',$('timerSnd').value)};
 
 /* ---------- 알림 기록 ---------- */
-var KN={rune:'룬',hunt:'사냥',timer:'타이머',sys:'시스템'};
+var KN={rune:'룬',hunt:'사냥',timer:'타이머',buff:'버프',sys:'시스템'};
 function p2(n){return (n<10?'0':'')+n}
 function when(ts){var d=new Date(ts),now=new Date(),s=p2(d.getHours())+':'+p2(d.getMinutes())+':'+p2(d.getSeconds());
   return d.toDateString()===now.toDateString()?s:(d.getMonth()+1)+'/'+d.getDate()+' '+s}
@@ -495,7 +527,7 @@ function fillLog(doc,ul,max){if(!ul)return;ul.textContent='';var list=logs.slice
     li.appendChild(tm);li.appendChild(k);li.appendChild(m);ul.appendChild(li)})}
 function renderLog(){fillLog(document,$('log'));if(pip)fillLog(pip.document,pip.document.getElementById('plog'),5)}
 $('logClear').onclick=function(){logs=[];try{localStorage.removeItem('maple-log')}catch(e){}renderLog()};
-function notify(kind,msg){addLog(kind,msg);sound(kind,kind==='rune'?cfg.runeSnd:kind==='hunt'?cfg.huntSnd:cfg.timerSnd);
+function notify(kind,msg){addLog(kind,msg);sound(kind,kind==='rune'?cfg.runeSnd:kind==='hunt'?cfg.huntSnd:kind==='buff'?cfg.buffSnd:cfg.timerSnd);
   try{if('Notification' in window&&Notification.permission==='granted')new Notification('재획 알리미',{body:msg})}catch(e){}}
 
 /* ---------- 타이머 ---------- */
@@ -548,7 +580,7 @@ $('pause').onclick=function(){setPaused(!paused)};
 
 /* ---------- 화면 공유 ---------- */
 var stream=null,picking=null,drag=null;
-function setUI(){var on=!!stream;$('emptyState').hidden=on;$('liveView').hidden=!on;$('start').disabled=on;$('stop').disabled=!on;$('pickRune').disabled=!on;$('pickHunt').disabled=!on;$('pickTpl').disabled=!on}
+function setUI(){var on=!!stream;$('emptyState').hidden=on;$('liveView').hidden=!on;$('start').disabled=on;$('stop').disabled=!on;$('pickRune').disabled=!on;$('pickHunt').disabled=!on;$('pickTpl').disabled=!on;$('pickBuff').disabled=!on}
 $('start').onclick=async function(){ac();
   try{if('Notification' in window&&Notification.permission==='default')Notification.requestPermission();
     /* displaySurface:'window' → 공유 선택창이 '창' 탭으로 바로 열림 (Chrome/Edge)
@@ -599,7 +631,7 @@ function openZoom(kind,title){if(!stream||!v.videoWidth)return;Z.kind=kind;Z.sel
   zFit();Z.hover=null;
   if(kind==='exp'){var W=v.videoWidth,Hh=v.videoHeight;   /* 화면 아래쪽(경험치바)을 2배 확대해서 보여줌 */
     zZoom(2,{x:zc.width/2,y:Z.oy+Hh*Z.s});Z.oy=Math.max(Z.oy,zc.height-Hh*Z.s-30);Z.ox=Math.min(0,Math.max(Z.ox,zc.width-W*Z.s))}
-  else{var focus=kind==='rune'?null:kind==='hunt'?cfg.hunt:cfg.rune;if(focus)zFocus(focus)}
+  else{var lb=cfg.buffs[cfg.buffs.length-1],focus=kind==='rune'?null:kind==='hunt'?cfg.hunt:kind==='buff'?(lb?{x:lb.pos.x-lb.pos.w*4,y:lb.pos.y-lb.pos.h,w:lb.pos.w*9,h:lb.pos.h*3}:null):cfg.rune;if(focus)zFocus(focus)}
   cancelAnimationFrame(Z.raf);(function loop(){zDraw();Z.raf=requestAnimationFrame(loop)})()}
 function closeZoom(){$('zoomer').hidden=true;cancelAnimationFrame(Z.raf);Z.kind=null;Z.sel=null;Z.pan=null}
 function zDraw(){var W=v.videoWidth,Hh=v.videoHeight;if(zc.width!==zc.clientWidth||zc.height!==zc.clientHeight)zSize();
@@ -633,7 +665,8 @@ zc.onpointermove=function(e){var p=zPt(e);Z.hover=zVid(p);
 zc.onpointerup=function(){if(Z.pan){Z.pan=null;return}if(!Z.drag)return;Z.drag=null;var r=Z.sel,kind=Z.kind;
   if(!r||r.w*v.videoWidth<2||r.h*v.videoHeight<2){Z.sel=null;return}
   closeZoom();
-  if(kind==='tpl')registerTpl(r);
+  if(kind==='buff')registerBuff(r);
+  else if(kind==='tpl')registerTpl(r);
   else{cfg[kind]=r;resetState();$('hint').textContent='영역을 지정했습니다. 프리셋 ‘저장’을 눌러 기록하세요.'}
   draw()};
 $('zIn').onclick=function(){zZoom(1.5,{x:zc.width/2,y:zc.height/2})};
@@ -667,15 +700,17 @@ ov.onpointerup=function(){if(!drag)return;var d=drag;drag=null;
   if(r.w>0.002&&r.h>0.002){cfg[picking]=r;resetState()}picking=null;$('hint').textContent='영역을 지정했습니다. 프리셋 ‘저장’을 눌러 기록하세요.';draw()};
 function box(r,c,t){if(!r)return;octx.strokeStyle=c;octx.lineWidth=2;octx.strokeRect(r.x*ov.width,r.y*ov.height,r.w*ov.width,r.h*ov.height);octx.fillStyle=c;octx.font='13px sans-serif';octx.fillText(t,r.x*ov.width+3,r.y*ov.height-4)}
 function draw(){octx.clearRect(0,0,ov.width,ov.height);box(cfg.rune,'#a855f7','미니맵');box(cfg.hunt,'#22c55e',huntLabel());
+  if(stream)cfg.buffs.forEach(function(b){box(b.pos,'#f5b942',b.name)});
   if(R&&stream&&cfg.rune)R.boxes.forEach(function(b){var p=3/ov.width;box({x:b.x-p,y:b.y-p,w:b.w+2*p,h:b.h+2*p},'#facc15','')});
   if(drag){box({x:Math.min(drag.a.x,drag.b.x),y:Math.min(drag.a.y,drag.b.y),w:Math.abs(drag.a.x-drag.b.x),h:Math.abs(drag.a.y-drag.b.y)},'#facc15','')}}
 
 /* ---------- 분석 ---------- */
-var R,H,nextHunt=0,nextRune=0;
+var R,H,BS=[],nextHunt=0,nextRune=0,nextBuff=0;
 function resetState(){var now=Date.now();
   R={cand:0,active:false,miss:0,cnt:0,last:0,info:'',boxes:[]};
   H={ref:null,since:now,cnt:0,last:0,sec:0,stalled:false,ep:false,chg:[]};
-  nextHunt=0;nextRune=0;updateStatus()}
+  BS=cfg.buffs.map(function(){return newBS()});
+  nextHunt=0;nextRune=0;nextBuff=0;renderBuffs();updateStatus()}
 function grab(r){var W=v.videoWidth,Hh=v.videoHeight;if(!W)return null;
   var w=Math.max(1,Math.floor(r.w*W)),h=Math.max(1,Math.floor(r.h*Hh));
   if(work.width!==w)work.width=w;if(work.height!==h)work.height=h;
@@ -786,7 +821,75 @@ function tick(){if(paused)return;var now=Date.now();
   if(!stream||!v.videoWidth)return;var ch=false;
   if(cfg.hunt&&now>=nextHunt){nextHunt=now+1500;checkHunt(now);ch=true}
   if(cfg.rune&&now>=nextRune){checkRune(now);ch=true}
+  if(cfg.buffs.length&&now>=nextBuff){nextBuff=now+1000;checkBuffs(now);ch=true}
   if(ch)updateStatus()}
+
+/* ---------- 버프 ---------- */
+function newBS(){return{sim:null,seen:false,endSince:0,ended:false,cnt:0,last:0}}
+$('pickBuff').onclick=function(){if(cfg.buffs.length>=4){$('hint').textContent='버프는 최대 4개까지 등록할 수 있습니다. 필요 없는 버프를 지우고 다시 등록하세요.';return}
+  openZoom('buff','버프 아이콘 등록 — 버프 아이콘 하나에 딱 맞게 드래그하세요')};
+function registerBuff(r){var g=grab(r);if(!g||g.w<4||g.h<4){$('hint').textContent='아이콘이 너무 작습니다. 확대해서 다시 드래그하세요.';return}
+  if(g.w>80||g.h>80){$('hint').textContent='범위가 너무 큽니다. 버프 아이콘 하나에만 맞게 드래그하세요.';return}
+  var px=[];for(var i=0;i<g.d.length;i+=4)px.push(g.d[i],g.d[i+1],g.d[i+2]);
+  var n=1,names=cfg.buffs.map(function(b){return b.name});while(names.indexOf('버프 '+n)>=0)n++;
+  cfg.buffs.push({name:'버프 '+n,tpl:{w:g.w,h:g.h,px:px},pos:r});BS.push(newBS());renderBuffs();updateStatus();
+  $('hint').textContent='‘버프 '+n+'’를 등록했습니다. 이름은 버프 카드에서 바꿀 수 있고, 프리셋에 저장해 두세요.'}
+/* 버프 비교 방식: 흑백 '무늬' 비교(정규화 상관 — 전체가 어두워지거나 밝아져도 점수 유지).
+   메이플 버프 아이콘은 시간이 지나며 아래부터 회색 막이 차오르고 남은 분 숫자가 바뀌므로
+   ① 모든 아이콘에 공통인 테두리와 숫자 자리(왼쪽 아래)는 제외
+   ② 아이콘을 가로 6줄로 나눠, 위쪽 4줄 각각의 무늬 일치도 중 3번째로 높은 값을 사용
+      (회색 막 경계는 한 번에 한 줄에만 걸리므로 같은 버프는 높게 유지되고, 다른 아이콘은 여러 줄이 동시에 맞기 어려움) */
+var BCACHE=new WeakMap();
+function prepBuff(b){var c=BCACHE.get(b);if(c)return c;var T=b.tpl,w=T.w,h=T.h,g=new Float32Array(w*h);
+  for(var i=0;i<w*h;i++)g[i]=T.px[i*3]*.299+T.px[i*3+1]*.587+T.px[i*3+2]*.114;
+  var e=Math.max(2,Math.round(Math.min(w,h)*.12)),xn=Math.round(w*.55),NB=6,step=(h-2*e)/NB,bands=[];
+  for(var q=0;q<4;q++){var a=Math.round(e+q*step),z=Math.round(e+(q+1)*step),xs=z>h*.6?xn:e,ox=[],oy=[],vals=[];
+    for(var y=a;y<z;y++)for(var x=xs;x<w-e;x++){ox.push(x);oy.push(y);vals.push(g[y*w+x])}
+    var n=vals.length,m=0;vals.forEach(function(v){m+=v});m/=n||1;var t=new Float32Array(n),ss=0;
+    for(var k=0;k<n;k++){t[k]=vals[k]-m;ss+=t[k]*t[k]}
+    if(n>=8&&Math.sqrt(ss)>2*Math.sqrt(n))bands.push({ox:ox,oy:oy,t:t,n:n,norm:Math.sqrt(ss)})}   /* 무늬가 거의 없는 줄은 제외 */
+  c={w:w,h:h,bands:bands,pick:Math.min(2,bands.length-1)};BCACHE.set(b,c);return c}
+/* 등록 위치 주변(좌우로 아이콘 3~4칸, 위아래 반 칸)에서 가장 비슷한 곳을 찾아 일치도(0~1) 반환 */
+function buffSim(b){var W=v.videoWidth,Hh=v.videoHeight;if(!W)return null;var P=prepBuff(b),tw=P.w,th=P.h;if(!P.bands.length)return null;
+  var x0=Math.round(b.pos.x*W),y0=Math.round(b.pos.y*Hh),bx=Math.max(0,x0-3*tw),by=Math.max(0,y0-Math.ceil(th/2)),
+    bx1=Math.min(W,x0+4*tw),by1=Math.min(Hh,y0+th+Math.ceil(th/2));
+  if(bx1-bx<tw||by1-by<th)return null;
+  var g=grab({x:bx/W,y:by/Hh,w:(bx1-bx)/W,h:(by1-by)/Hh}),d=g.d,w=g.w,h=g.h;if(w<tw||h<th)return null;
+  var G=new Float32Array(w*h);for(var i=0,k=0;k<w*h;i+=4,k++)G[k]=d[i]*.299+d[i+1]*.587+d[i+2]*.114;
+  function score(x,y){var vs=[];
+    for(var q=0;q<P.bands.length;q++){var bd=P.bands[q],sa=0,saa=0,sat=0;
+      for(var k=0;k<bd.n;k++){var a=G[(y+bd.oy[k])*w+x+bd.ox[k]];sa+=a;saa+=a*a;sat+=a*bd.t[k]}
+      var va=saa-sa*sa/bd.n;vs.push(va>1e-6?Math.max(0,sat/(Math.sqrt(va)*bd.norm)):0)}
+    vs.sort(function(p,q){return q-p});return vs[P.pick]||0}
+  var best=0;for(var y=0;y<=h-th;y++)for(var x=0;x<=w-tw;x++){var sc=score(x,y);if(sc>best)best=sc}
+  return Math.max(0,Math.min(1,best))}
+function checkBuffs(now){var thr=1-cfg.buffChange/100;
+  cfg.buffs.forEach(function(b,i){var st=BS[i]||(BS[i]=newBS()),s=buffSim(b);if(s===null)return;st.sim=s;
+    if(s>=thr){st.seen=true;st.endSince=0;if(st.ended){st.ended=false;st.cnt=0}}
+    else if(st.seen){if(!st.endSince)st.endSince=now;
+      if(now-st.endSince>=cfg.buffHold*1000){st.ended=true;
+        if(st.cnt<LIM[cfg.buffCnt]&&(st.cnt===0||now-st.last>=cfg.buffInt*1000)){st.cnt++;st.last=now;
+          notify('buff',b.name+' 종료 · 일치도 '+Math.round(s*100)+'%'+(st.cnt>1?' ('+st.cnt+'번째)':''))}}}})}
+function buffState(){var n=cfg.buffs.length;if(!n)return['미설정','off'];if(!stream)return['대기 중','off'];if(paused)return['일시정지','off'];
+  var end=[],wait=0;cfg.buffs.forEach(function(b,i){var st=BS[i];if(!st)return;if(st.ended)end.push(b.name);else if(!st.seen)wait++});
+  if(end.length)return[end.join(', ')+' 종료','alert'];
+  if(wait)return['아이콘 확인 중 ('+(n-wait)+'/'+n+')','warn'];
+  return['유지 중 '+n+'개','ok']}
+function renderBuffs(){var ul=$('buffList');ul.textContent='';
+  if(!cfg.buffs.length){var e=document.createElement('li');e.className='empty';e.textContent='화면 공유 후 ‘버프 아이콘 +’로 등록하세요';ul.appendChild(e);return}
+  cfg.buffs.forEach(function(b,i){var li=document.createElement('li'),c=document.createElement('canvas'),T=b.tpl;c.width=T.w;c.height=T.h;
+    var cx=c.getContext('2d'),im=cx.createImageData(T.w,T.h);for(var k=0,j=0;k<T.w*T.h;k++,j+=3){im.data[k*4]=T.px[j];im.data[k*4+1]=T.px[j+1];im.data[k*4+2]=T.px[j+2];im.data[k*4+3]=255}
+    cx.putImageData(im,0,0);
+    var info=document.createElement('div');info.className='bi';
+    var nm=document.createElement('input');nm.type='text';nm.maxLength=20;nm.value=b.name;nm.title='이름 바꾸기';nm.oninput=function(){b.name=nm.value.trim()||'버프'};
+    var stt=document.createElement('span');stt.className='bs';info.appendChild(nm);info.appendChild(stt);
+    var x=document.createElement('button');x.className='x';x.textContent='✕';x.title='삭제';
+    x.onclick=function(){cfg.buffs.splice(i,1);BS.splice(i,1);renderBuffs();updateStatus();draw()};
+    li.appendChild(c);li.appendChild(info);li.appendChild(x);ul.appendChild(li)});
+  updateBuffRows()}
+function updateBuffRows(){var lis=$('buffList').children;cfg.buffs.forEach(function(b,i){var li=lis[i],st=BS[i];if(!li||!st)return;
+  var t=!stream?'화면 연결 대기':paused?'일시정지':st.ended?'종료됨 · 다시 켜면 자동 복구':st.sim===null?'확인 중':!st.seen?'아이콘을 찾는 중 · 일치도 '+Math.round(st.sim*100)+'%':'유지 중 · 일치도 '+Math.round(st.sim*100)+'%';
+  li.className=st.ended&&stream&&!paused?'end':'';li.querySelector('.bs').textContent=t})}
 
 /* ---------- 상태 표시 ---------- */
 function runeState(){if(!cfg.rune)return['미설정','off'];if(!stream)return['대기 중','off'];if(paused)return['일시정지','off'];
@@ -799,7 +902,9 @@ function huntState(){if(!cfg.hunt)return['미설정','off'];if(!stream)return['�
   if(H.stalled)return['멈춤 의심 ('+H.sec+'초)','alert'];
   if(H.ep)return['재개 확인 중 ('+H.chg.length+'/'+cfg.huntResume+')','warn'];
   return['사냥 중','ok']}
-function updateStatus(){if(!R)return;var r=runeState(),h=huntState();
+function updateStatus(){if(!R)return;var r=runeState(),h=huntState(),bf=buffState();
+  $('buffS').textContent=bf[0];$('buffS').className='status'+(bf[1]==='alert'?' alert':bf[1]==='warn'?' warn':'');updateBuffRows();
+  $('pickBuff').classList.toggle('done',cfg.buffs.length>0);
   $('runeS').textContent=r[0];$('runeS').className='status'+(r[1]==='alert'?' alert':r[1]==='warn'?' warn':'');
   $('huntS').textContent=h[0];$('huntS').className='status'+(h[1]==='alert'?' alert':'');
   $('runeM').textContent=!cfg.rune?'영역 설정에서 ‘미니맵’을 지정하세요':!stream?'화면 연결 대기':R.info||'감지 준비 중';
@@ -809,7 +914,7 @@ function updateStatus(){if(!R)return;var r=runeState(),h=huntState();
   $('pickRune').classList.toggle('done',!!cfg.rune);$('pickHunt').classList.toggle('done',!!cfg.hunt);$('pickTpl').classList.toggle('done',!!cfg.runeTpl);
   var lt=$('liveTag');lt.textContent=paused?'정지됨':stream?'분석 중':'연결 안 됨';lt.className='tag'+(paused?' stop':stream?' live':'');
   $('volTxt').textContent=vol+'%';
-  renderPip(r,h)}
+  renderPip(r,h,bf)}
 
 /* ---------- PIP 창 (Chrome/Edge 116+) ---------- */
 var ICON_ON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>';
@@ -840,7 +945,7 @@ var PIPCSS='*{box-sizing:border-box}html,body{margin:0;height:100%}'+
  '.rows li.ok i{background:#5cc79a;border-color:#5cc79a}.rows li.warn i{background:#f2c14e;border-color:#f2c14e}.rows li.alert i{background:#ff6b6b;border-color:#ff6b6b;animation:blink 1s infinite}'+
  '.rows span{font-weight:700;flex:1}.rows em{font-style:normal;color:#8b929a}.rows li.alert em{color:#ff6b6b;font-weight:700}.rows li.warn em{color:#f2c14e}'+
  '.plog li{display:flex;gap:8px;padding:6px 10px;font-size:12px;border-top:1px solid #24272b;color:#c9ced6}.plog li:first-child{border-top:0}'+
- '.plog time{color:#7d848c;flex:none}.plog .k{font-weight:700;flex:none}.plog .rune .k{color:#c084fc}.plog .hunt .k{color:#ff8a6b}.plog .timer .k{color:#6cb6ff}.plog .sys,.plog .empty{color:#7d848c}'+
+ '.plog time{color:#7d848c;flex:none}.plog .k{font-weight:700;flex:none}.plog .rune .k{color:#c084fc}.plog .hunt .k{color:#ff8a6b}.plog .timer .k{color:#6cb6ff}.plog .buff .k{color:#f5b942}.plog .sys,.plog .empty{color:#7d848c}'+
  '.plog .m{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}'+
  '@keyframes blink{50%{opacity:.35}}';
 var PIPHTML='<header><span>🍁</span><b id="pTitle">타이머</b><span class="sp"></span>'+
@@ -849,13 +954,13 @@ var PIPHTML='<header><span>🍁</span><b id="pTitle">타이머</b><span class="s
  '<div id="pVolBox" hidden><input type="range" id="pVolR" min="0" max="100" aria-label="볼륨"></div>'+
  '<section class="center"><div id="pTimer"></div><div id="pSub"></div>'+
  '<div class="tbtns"><button id="pRestart" title="타이머를 처음부터 다시 시작">↻ 재시작</button><button id="pToggle"></button></div></section>'+
- '<ul class="rows"><li id="pRune"><i></i><span>룬</span><em></em></li><li id="pHunt"><i></i><span>사냥 멈춤</span><em></em></li></ul>'+
+ '<ul class="rows"><li id="pRune"><i></i><span>룬</span><em></em></li><li id="pHunt"><i></i><span>사냥 멈춤</span><em></em></li><li id="pBuff"><i></i><span>버프</span><em></em></li></ul>'+
  '<ul class="plog" id="plog"></ul>';
 
 $('pipBtn').onclick=async function(){
   if(pip){pip.close();return}
   if(!('documentPictureInPicture' in window)){$('hint').textContent='이 브라우저는 PIP 창을 지원하지 않습니다. Chrome 또는 Edge 최신 버전에서 열어주세요.';return}
-  var w;try{w=await documentPictureInPicture.requestWindow({width:340,height:500})}
+  var w;try{w=await documentPictureInPicture.requestWindow({width:340,height:530})}
   catch(e){$('hint').textContent='PIP 창을 열지 못했습니다. ('+(e&&e.name||'오류')+')';return}
   pip=w;var d=w.document;d.title='재획 알리미';
   var st=d.createElement('style');st.textContent=PIPCSS;d.head.appendChild(st);
@@ -871,12 +976,12 @@ $('pipBtn').onclick=async function(){
   $('pipBtn').textContent='PIP 창 닫기';updateStatus();renderTimer(true);renderLog()};
 
 function pipRow(li,s){li.className=s[1];li.querySelector('em').textContent=s[0]}
-function renderPip(r,h){if(!pip)return;var d=pip.document,g=function(i){return d.getElementById(i)};if(!g('pRune'))return;
+function renderPip(r,h,bf){if(!pip)return;var d=pip.document,g=function(i){return d.getElementById(i)};if(!g('pRune'))return;
   var pb=g('pPause'),key=paused?'off':'on';
   if(pb.dataset.k!==key){pb.dataset.k=key;pb.className=paused?'on':'';pb.innerHTML=paused?ICON_OFF:ICON_ON;
     pb.title=paused?'정지됨 — 눌러서 다시 시작':'전체 정지'}
   g('pVolV').textContent=vol+'%';g('pVolR').value=vol;
-  pipRow(g('pRune'),r);pipRow(g('pHunt'),h)}
+  pipRow(g('pRune'),r);pipRow(g('pHunt'),h);if(bf)pipRow(g('pBuff'),bf)}
 
 /* ---------- 시작 ---------- */
 renderPresets();
