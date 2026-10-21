@@ -157,6 +157,20 @@ details.adv[open]{padding-bottom:12px}
 .foot{text-align:center;color:var(--faint);font-size:12px;margin-top:22px}
 
 /* 확대 창 */
+/* 접속 코드 잠금 화면 */
+body.locked>.top,body.locked>main,body.locked>#zoomer{display:none!important}
+.gate{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:16px;
+  background:radial-gradient(1200px 600px at 50% -10%,rgba(76,194,255,.10),transparent 60%),var(--bg)}
+.gcard{width:100%;max-width:340px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:30px 26px 24px;text-align:center;
+  box-shadow:0 24px 60px rgba(0,0,0,.45);display:grid;gap:12px}
+.gcard .logo{width:52px;height:52px;border-radius:14px;font-size:26px;margin:0 auto 4px}
+.gcard h1{margin:0;font-size:20px;letter-spacing:-.3px}
+.gcard p{margin:0;color:var(--mute);font-size:13px}
+.gcard input{height:46px;font-size:20px;text-align:center;letter-spacing:6px;border-radius:10px;width:100%}
+.gcard .primary{height:44px;font-size:15px;width:100%}
+.gerr{min-height:18px;color:var(--bad)!important;font-weight:600}
+.shake{animation:shake .35s}
+@keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
 #zoomer{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.92);display:flex;flex-direction:column}
 .zbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:12px 16px;background:var(--panel);border-bottom:1px solid var(--line)}
 .zbar b{font-size:14px}
@@ -166,7 +180,17 @@ details.adv[open]{padding-bottom:12px}
 #zc{flex:1;width:100%;min-height:0;display:block;cursor:crosshair;touch-action:none}
 </style>
 </head>
-<body>
+<body class="locked">
+<div id="gate" class="gate">
+  <form class="gcard" id="gateForm" autocomplete="off">
+    <span class="logo">🍁</span>
+    <h1>재획 알리미</h1>
+    <p>접속 코드를 입력하세요</p>
+    <input id="gateCode" type="password" inputmode="numeric" maxlength="20" placeholder="••••" aria-label="접속 코드" autofocus>
+    <button class="primary" type="submit" id="gateBtn">입장</button>
+    <p class="gerr" id="gateErr"></p>
+  </form>
+</div>
 <header class="top"><div class="top-in">
   <div class="brand"><span class="logo">🍁</span><b>재획 알리미</b><span class="tag" id="liveTag">연결 안 됨</span></div>
 
@@ -191,6 +215,7 @@ details.adv[open]{padding-bottom:12px}
     </div>
   </details>
 
+  <button class="ghost icon" id="lockBtn" title="잠그기">🔒</button>
   <button class="ghost" id="pipBtn" title="항상 위에 떠 있는 작은 창 (Chrome·Edge)">PIP 창 열기</button>
   <button class="danger" id="pause">⏸ 전체 정지</button>
 </div></header>
@@ -359,6 +384,42 @@ PIP 창의 ‘재시작’으로 바로 다시 시작할 수 있습니다.
   <canvas id="zc"></canvas>
 </div>
 
+<script>
+/* ---------- 접속 코드 잠금 ----------
+   코드는 원문 대신 SHA-256 해시로만 보관 (소스에 코드 원문이 남지 않음)
+   코드를 바꾸려면 CODE_HASH 값을 새 코드의 해시로 교체
+   ※ 서버가 없는 정적 페이지라 완전한 보안은 아니며, 지인용 잠금 수준입니다. */
+(function(){
+var SALT='maple-alarm:',CODE_HASH='286e1e92edb7dc53056fed4a8a4485e7bee3025e083cf16977e79dbec7a72911';
+function $(i){return document.getElementById(i)}
+function sha256(ascii){function rr(v,a){return(v>>>a)|(v<<(32-a))}var mp=Math.pow,mw=mp(2,32),res='',w=[],al=ascii.length*8,i,j;
+  var H=sha256.h=sha256.h||[],K=sha256.k=sha256.k||[],pl=K.length,ic={};
+  for(var c=2;pl<64;c++){if(!ic[c]){for(i=0;i<313;i+=c)ic[i]=c;H[pl]=(mp(c,.5)*mw)|0;K[pl++]=(mp(c,1/3)*mw)|0}}
+  ascii+='\x80';while(ascii.length%64-56)ascii+='\x00';
+  for(i=0;i<ascii.length;i++){j=ascii.charCodeAt(i);if(j>>8)return'';w[i>>2]|=j<<((3-i)%4)*8}
+  w[w.length]=((al/mw)|0);w[w.length]=al;
+  for(j=0;j<w.length;){var Wd=w.slice(j,j+=16),oh=H;H=H.slice(0,8);
+    for(i=0;i<64;i++){var w15=Wd[i-15],w2=Wd[i-2],a=H[0],e=H[4],
+      t1=H[7]+(rr(e,6)^rr(e,11)^rr(e,25))+((e&H[5])^((~e)&H[6]))+K[i]+(Wd[i]=(i<16)?Wd[i]:(Wd[i-16]+(rr(w15,7)^rr(w15,18)^(w15>>>3))+Wd[i-7]+(rr(w2,17)^rr(w2,19)^(w2>>>10)))|0),
+      t2=(rr(a,2)^rr(a,13)^rr(a,22))+((a&H[1])^(a&H[2])^(H[1]&H[2]));H=[(t1+t2)|0].concat(H);H[4]=(H[4]+t1)|0}
+    for(i=0;i<8;i++)H[i]=(H[i]+oh[i])|0}
+  for(i=0;i<8;i++)for(j=3;j+1;j--){var b=(H[i]>>(j*8))&255;res+=((b<16)?0:'')+b.toString(16)}return res}
+function hashOf(code){return sha256(unescape(encodeURIComponent(SALT+code)))}
+function unlock(){document.body.classList.remove('locked');$('gate').hidden=true;
+  try{sessionStorage.setItem('maple-ok','1')}catch(e){}window.dispatchEvent(new Event('resize'))}
+var fails=0,until=0;
+$('gateForm').onsubmit=function(ev){ev.preventDefault();var now=Date.now(),inp=$('gateCode');
+  if(now<until){$('gateErr').textContent=Math.ceil((until-now)/1000)+'초 후에 다시 시도하세요';return}
+  if(hashOf(inp.value.trim())===CODE_HASH){fails=0;inp.value='';unlock();return}
+  fails++;inp.value='';var c=$('gateForm');c.classList.remove('shake');void c.offsetWidth;c.classList.add('shake');
+  if(fails>=5){until=now+30000;fails=0;$('gateErr').textContent='5번 틀렸습니다. 30초 후에 다시 시도하세요'}
+  else $('gateErr').textContent='코드가 올바르지 않습니다 ('+fails+'/5)';inp.focus()};
+$('lockBtn').onclick=function(){try{sessionStorage.removeItem('maple-ok')}catch(e){}location.reload()};
+/* 같은 탭에서 새로고침하면 다시 묻지 않음 (탭을 닫으면 다시 입력) */
+var ok=null;try{ok=sessionStorage.getItem('maple-ok')}catch(e){}
+if(ok)unlock();else setTimeout(function(){$('gateCode').focus()},50);
+})();
+</script>
 <script>
 (function(){
 'use strict';
