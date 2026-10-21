@@ -43,6 +43,12 @@ input[type=number]{width:80px}
 .tset{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;margin-top:4px}
 @media(max-width:760px){.tset{grid-template-columns:1fr}}
 @keyframes blink{50%{opacity:.35}}
+#zoomer{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.9);display:flex;flex-direction:column}
+#zoomer[hidden]{display:none}
+.zbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 14px;background:#15181a;color:#e8eee9}
+.zbar .meta{color:#93a099}.zbar .sp{flex:1}
+.zbar button{background:#242a27;color:#e8eee9;border-color:#3a433e;min-width:40px}
+#zc{flex:1;width:100%;min-height:0;display:block;cursor:crosshair;touch-action:none}
 .log{list-style:none;margin:10px 0 0;padding:0;max-height:260px;overflow:auto;font-size:.9rem}
 .log li{display:flex;gap:10px;padding:6px 2px;border-top:1px solid var(--line)}
 .log time{color:var(--mute);font-variant-numeric:tabular-nums;flex:none}
@@ -75,15 +81,16 @@ input[type=number]{width:80px}
 <div class="card">
   <div class="row">
     <button class="primary" id="start">화면 공유 시작</button>
-    <button id="stop" disabled>공유 종료</button>
-    <button class="danger" id="pause">⏸ 전체 정지</button>
     <button id="pickRune" disabled>미니맵 영역 지정</button>
     <button id="pickHunt" disabled>MP 영역 지정</button>
+    <button id="pickTpl" disabled title="룬 아이콘 샘플 등록">룬 영역 지정</button>
+    <button id="stop" disabled>공유 종료</button>
+    <button class="danger" id="pause">⏸ 전체 정지</button>
     <button id="togglePrev">미리보기 숨기기</button>
     <button id="pipBtn">PIP 창 열기</button>
   </div>
   <div class="stage" id="stage"><video id="v" muted playsinline></video><canvas id="ov"></canvas></div>
-  <p class="hint" id="hint">‘화면 공유 시작’ → 메이플스토리 창 선택 → 영역 지정 버튼을 누르고 미리보기에서 드래그하세요.</p>
+  <p class="hint" id="hint">‘화면 공유 시작’ → 메이플스토리 창 선택 → 영역 지정 버튼을 누르면 확대 창이 열립니다. 거기서 드래그하세요.</p>
   <label>알림 볼륨 <input type="range" id="vol" min="0" max="100"></label>
   <label>소리 증폭 <select id="boost"><option value="1">보통</option><option value="2.5">크게</option><option value="4">아주 크게</option></select>
     <span class="meta">‘큰 음성’은 브라우저 한계로 증폭되지 않으니 윈도우 볼륨으로 조절하세요.</span></label>
@@ -115,10 +122,29 @@ input[type=number]{width:80px}
   <div class="card">
     <strong>룬 알림</strong> <span class="meta">(4.5초마다 확인, 의심되면 0.2초 간격으로 재확인)</span>
     <div class="status" id="runeS">대기 중</div>
-    <div class="meta" id="runeM">보라색 픽셀: -</div>
-    <label>마름모 크기 <input type="number" id="runeMin" min="3" max="30"> ~ <input type="number" id="runeMax" min="6" max="80"> px (가로·세로)</label>
-    <label>마름모 형태 일치 기준: <b id="runeShapeV"></b>% 이상<input type="range" id="runeShape" min="50" max="95"></label>
-    <p class="hint" style="margin-top:4px">보라색 픽셀이 마름모 모양으로 뭉쳐 있을 때만 룬 후보로 봅니다. 인식된 마름모는 미리보기에 노란 테두리로 표시됩니다.</p>
+    <div class="meta" id="runeM">-</div>
+    <label>탐지 방식 <select id="runeMode">
+      <option value="sample">샘플 이미지 비교 (추천)</option>
+      <option value="color">색상 덩어리</option>
+      <option value="diamond">마름모 모양</option></select></label>
+    <div class="row" style="margin-top:10px">
+      <span class="meta">룬 샘플</span>
+      <canvas id="tplView" width="48" height="48" style="border:1px solid var(--line);border-radius:6px;background:#000;image-rendering:pixelated"></canvas>
+      <span class="meta" id="tplInfo">등록된 샘플 없음</span>
+    </div>
+    <p class="hint" style="margin-top:4px">룬이 떠 있을 때 상단의 ‘룬 영역 지정’을 누르고 확대 창에서 룬 주변을 드래그하면, 룬 아이콘만 자동으로 잘라 저장합니다. 룬 색상도 함께 등록됩니다.</p>
+    <div id="modeSample">
+      <label>샘플 일치 기준: <b id="runeSimV"></b>% 이상<input type="range" id="runeSim" min="50" max="98"></label>
+    </div>
+    <div id="modeColor">
+      <label>룬 색상 <input type="color" id="runeColor"> 허용 오차: <b id="runeTolV"></b><input type="range" id="runeTol" min="20" max="150"></label>
+      <label>덩어리 최소 픽셀 수 <input type="number" id="runeMinPx" min="1" max="100"> 개</label>
+    </div>
+    <div id="modeDiamond">
+      <label>마름모 형태 일치 기준: <b id="runeShapeV"></b>% 이상<input type="range" id="runeShape" min="50" max="95"></label>
+    </div>
+    <label id="sizeRow">덩어리 크기 <input type="number" id="runeMin" min="1" max="30"> ~ <input type="number" id="runeMax" min="6" max="80"> px (가로·세로)</label>
+    <p class="hint" style="margin-top:4px">인식된 룬은 미리보기에 노란 테두리로 표시됩니다.</p>
     <label>유지 시간 <input type="number" id="runeHold" min="0.5" max="5" step="0.5"> 초 이상 계속 보이면 룬으로 판단</label>
     <label>알림 횟수: <b id="runeCntV"></b><input type="range" id="runeCnt" min="0" max="3"></label>
     <label>알림 간격 <input type="number" id="runeInt" min="1" max="60"> 초</label>
@@ -133,6 +159,8 @@ input[type=number]{width:80px}
     <label>변화 민감도: 바뀐 픽셀 <b id="huntDV"></b>개 이상<input type="range" id="huntD" min="1" max="40"></label>
     <label>알림 횟수: <b id="huntCntV"></b><input type="range" id="huntCnt" min="0" max="3"></label>
     <label>알림 간격 <input type="number" id="huntInt" min="1" max="60"> 초</label>
+    <label>사냥 재개 판정: 10초 안에 변화가 <input type="number" id="huntResume" min="1" max="5"> 번 이상 감지되면</label>
+    <p class="hint" style="margin-top:4px">멈춤 알림이 울린 뒤에는 사냥이 다시 시작된 것으로 판정될 때까지 새 알림을 보내지 않습니다. 화면 잡음 때문에 다시 울리면 이 숫자를 올리세요.</p>
     <label>소리 <select id="huntSnd"></select> <button id="huntTest">듣기</button></label>
   </div>
 </div>
@@ -143,6 +171,17 @@ input[type=number]{width:80px}
 </div>
 </main>
 
+<div id="zoomer" hidden>
+  <div class="zbar">
+    <b id="zTitle"></b>
+    <span class="meta">휠: 확대·축소 · 오른쪽 버튼 드래그: 화면 이동 · 왼쪽 드래그: 영역 선택 · Esc: 취소</span>
+    <span class="sp"></span>
+    <span class="meta" id="zZoom"></span>
+    <button id="zOut">－</button><button id="zIn">＋</button><button id="zFit">화면 맞춤</button><button id="zCancel">취소</button>
+  </div>
+  <canvas id="zc"></canvas>
+</div>
+
 <script>
 (function(){
 'use strict';
@@ -151,11 +190,12 @@ var v=$('v'),ov=$('ov'),octx=ov.getContext('2d');
 var work=document.createElement('canvas'),wctx=work.getContext('2d',{willReadFrequently:true});
 
 /* ---------- 설정 ---------- */
-var DEF={rune:null,hunt:null,runeMin:4,runeMax:40,runeShape:70,runeHold:1,runeCnt:0,runeInt:5,runeSnd:'quiet',
-  huntSec:6,huntBr:200,huntD:5,huntCnt:3,huntInt:5,huntSnd:'quiet',
+var DEF={rune:null,hunt:null,runeMode:'sample',runeTpl:null,runeColor:'#dd66ff',runeTol:70,runeMinPx:3,runeSim:70,
+  runeMin:2,runeMax:40,runeShape:70,runeHold:1,runeCnt:0,runeInt:5,runeSnd:'quiet',
+  huntSec:6,huntBr:200,huntD:5,huntCnt:1,huntInt:5,huntResume:2,huntSnd:'quiet',
   timerMin:30,timerSec:0,timerCnt:1,timerInt:5,timerSnd:'chime',timerAuto:false};
-var RANGE={runeMin:[3,30],runeMax:[6,80],runeShape:[50,95],runeHold:[0.5,5],runeCnt:[0,3],runeInt:[1,60],
-  huntSec:[1,600],huntBr:[120,255],huntD:[1,40],huntCnt:[0,3],huntInt:[1,60],
+var RANGE={runeTol:[20,150],runeMinPx:[1,100],runeSim:[50,98],runeMin:[1,30],runeMax:[6,80],runeShape:[50,95],runeHold:[0.5,5],runeCnt:[0,3],runeInt:[1,60],
+  huntSec:[1,600],huntBr:[120,255],huntD:[1,40],huntCnt:[0,3],huntInt:[1,60],huntResume:[1,5],
   timerMin:[0,600],timerSec:[0,59],timerCnt:[0,3],timerInt:[1,60]};
 var NUM=Object.keys(RANGE),STR=['runeSnd','huntSnd','timerSnd'],BOOL=['timerAuto'];
 var SOUNDS={quiet:'조용한 띵동',chime:'차임벨',beep:'경보 삐삐',siren:'사이렌',clock:'자명종',coin:'코인 띠링',bell:'종소리',
@@ -172,7 +212,15 @@ function clean(p){var o=Object.assign({},DEF);if(!p||typeof p!=='object')return 
   NUM.forEach(function(k){var n=clampNum(p[k],RANGE[k][0],RANGE[k][1]);if(n!==null)o[k]=n});
   STR.forEach(function(k){if(Object.prototype.hasOwnProperty.call(SOUNDS,p[k]))o[k]=p[k]});
   BOOL.forEach(function(k){if(typeof p[k]==='boolean')o[k]=p[k]});
+  if(MODES.indexOf(p.runeMode)>=0)o.runeMode=p.runeMode;
+  if(typeof p.runeColor==='string'&&/^#[0-9a-f]{6}$/i.test(p.runeColor))o.runeColor=p.runeColor.toLowerCase();
+  o.runeTpl=okTpl(p.runeTpl);
   o.rune=okRect(p.rune);o.hunt=okRect(p.hunt);return o}
+var MODES=['sample','color','diamond'];
+function okTpl(t){if(!t||typeof t!=='object')return null;var w=t.w,h=t.h;
+  if(!(w>=2&&w<=60&&h>=2&&h<=60&&w%1===0&&h%1===0)||!Array.isArray(t.px)||t.px.length!==w*h*3)return null;
+  if(!t.px.every(function(n){return typeof n==='number'&&n>=0&&n<=255}))return null;
+  return{w:w,h:h,px:t.px.map(function(n){return n|0}),vw:+t.vw||0,vh:+t.vh||0}}
 
 try{var raw=JSON.parse(localStorage.getItem('maple-presets')||'{}');
   if(raw&&typeof raw==='object')Object.keys(raw).forEach(function(k){presets[k]=clean(raw[k])});
@@ -187,9 +235,23 @@ function persist(){try{localStorage.setItem('maple-presets',JSON.stringify(prese
 STR.forEach(function(k){var s=$(k);Object.keys(SOUNDS).forEach(function(id){
   var o=document.createElement('option');o.value=id;o.textContent=SOUNDS[id];s.appendChild(o)})});
 function show(id){var o=$(id+'V');if(!o)return;
-  o.textContent=id==='timerCnt'?TLBL[$(id).value]:/Cnt$/.test(id)?LBL[$(id).value]:$(id).value}
+  o.textContent=id==='timerCnt'?TLBL[$(id).value]:id==='huntCnt'?HLBL[$(id).value]:/Cnt$/.test(id)?LBL[$(id).value]:$(id).value}
+var HLBL=['1번만','3번까지','5번까지','사냥 재개될 때까지 계속'];
 function fill(){NUM.concat(STR).forEach(function(k){$(k).value=cfg[k];show(k)});
-  BOOL.forEach(function(k){$(k).checked=!!cfg[k]});$('vol').value=vol;renderTimer(true)}
+  BOOL.forEach(function(k){$(k).checked=!!cfg[k]});$('vol').value=vol;
+  $('runeMode').value=cfg.runeMode;$('runeColor').value=cfg.runeColor;modeUI();drawTpl();renderTimer(true)}
+$('runeMode').onchange=function(){cfg.runeMode=$('runeMode').value;modeUI();if(R){R.cand=0;R.boxes=[];R.info='';nextRune=0}updateStatus();draw()};
+$('runeColor').oninput=function(){cfg.runeColor=$('runeColor').value};
+function modeUI(){$('modeSample').hidden=cfg.runeMode!=='sample';$('modeColor').hidden=cfg.runeMode!=='color';
+  $('modeDiamond').hidden=cfg.runeMode!=='diamond';$('sizeRow').hidden=cfg.runeMode==='sample'}
+/* 등록된 샘플 미리보기 */
+function drawTpl(){var c=$('tplView'),x=c.getContext('2d');x.clearRect(0,0,c.width,c.height);var T=cfg.runeTpl;
+  if(!T){$('tplInfo').textContent='등록된 샘플 없음';return}
+  var tmp=document.createElement('canvas');tmp.width=T.w;tmp.height=T.h;var tc=tmp.getContext('2d'),im=tc.createImageData(T.w,T.h);
+  for(var i=0,j=0;i<T.w*T.h;i++,j+=3){im.data[i*4]=T.px[j];im.data[i*4+1]=T.px[j+1];im.data[i*4+2]=T.px[j+2];im.data[i*4+3]=255}
+  tc.putImageData(im,0,0);x.imageSmoothingEnabled=false;var s=Math.floor(Math.min(c.width/T.w,c.height/T.h))||1;
+  x.drawImage(tmp,(c.width-T.w*s)/2,(c.height-T.h*s)/2,T.w*s,T.h*s);
+  $('tplInfo').textContent='샘플 '+T.w+'×'+T.h+'px 등록됨'+(T.vw&&v.videoWidth&&T.vw!==v.videoWidth?' · ⚠ 공유 화면 크기가 등록 때와 달라요. 다시 등록하세요':'')}
 NUM.forEach(function(k){
   $(k).oninput=function(){var n=clampNum($(k).value,RANGE[k][0],RANGE[k][1]);if(n!==null)cfg[k]=n;show(k);
     if(k==='timerMin'||k==='timerSec')renderTimer(true)};
@@ -333,14 +395,17 @@ $('pause').onclick=function(){setPaused(!paused)};
 
 /* ---------- 화면 공유 ---------- */
 var stream=null,picking=null,drag=null;
-function setUI(){var on=!!stream;$('start').disabled=on;$('stop').disabled=!on;$('pickRune').disabled=!on;$('pickHunt').disabled=!on}
+function setUI(){var on=!!stream;$('start').disabled=on;$('stop').disabled=!on;$('pickRune').disabled=!on;$('pickHunt').disabled=!on;$('pickTpl').disabled=!on}
 $('start').onclick=async function(){ac();
   try{if('Notification' in window&&Notification.permission==='default')Notification.requestPermission();
-    stream=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:{ideal:5,max:10}},audio:false});
+    /* displaySurface:'window' → 공유 선택창이 '창' 탭으로 바로 열림 (Chrome/Edge)
+       selfBrowserSurface:'exclude' → 목록에서 이 알리미 탭은 빼기, surfaceSwitching:'exclude' → 공유 중 '이 탭 공유' 전환 버튼 숨김 */
+    stream=await navigator.mediaDevices.getDisplayMedia({video:{displaySurface:'window',frameRate:{ideal:5,max:10},width:{ideal:3840},height:{ideal:2160}},audio:false,
+      selfBrowserSurface:'exclude',surfaceSwitching:'exclude',systemAudio:'exclude'});
     v.srcObject=stream;await v.play();stream.getVideoTracks()[0].addEventListener('ended',stop);
     $('hint').textContent='분석 중입니다. 영역은 프리셋에 저장하세요.';sizeOv();resetState();setUI();addLog('sys','화면 공유 시작')
   }catch(e){stream=null;setUI();$('hint').textContent='화면 공유를 시작하지 못했습니다. ('+(e&&e.name||'오류')+')'}};
-function stop(){if(!stream)return;stream.getTracks().forEach(function(t){t.stop()});stream=null;v.srcObject=null;
+function stop(){if(!stream)return;closeZoom();stream.getTracks().forEach(function(t){t.stop()});stream=null;v.srcObject=null;
   setUI();resetState();addLog('sys','화면 공유 종료')}
 $('stop').onclick=stop;
 $('togglePrev').onclick=function(){var h=$('stage').classList.toggle('hide');$('togglePrev').textContent=h?'미리보기 보이기':'미리보기 숨기기';if(!h){sizeOv();draw()}};
@@ -356,13 +421,74 @@ function stopTicker(){if(tw){tw.terminate();tw=null}if(ti){clearInterval(ti);ti=
 /* ---------- 영역 지정 ---------- */
 function sizeOv(){ov.width=ov.clientWidth;ov.height=ov.clientHeight}
 window.addEventListener('resize',function(){sizeOv();draw()});
-$('pickRune').onclick=function(){picking='rune';if($('stage').classList.contains('hide'))$('togglePrev').click();$('hint').textContent='미니맵 영역을 드래그하세요.'};
-$('pickHunt').onclick=function(){picking='hunt';if($('stage').classList.contains('hide'))$('togglePrev').click();$('hint').textContent='MP 숫자 영역을 드래그하세요. 숫자에 딱 맞게 작게 잡을수록 정확합니다.'};
+$('pickRune').onclick=function(){openZoom('rune','미니맵 영역 지정 — 미니맵 전체를 드래그하세요')};
+$('pickHunt').onclick=function(){openZoom('hunt','MP 영역 지정 — MP 숫자에 딱 맞게 드래그하세요')};
+$('pickTpl').onclick=function(){openZoom('tpl','룬 영역 지정 — 룬이 떠 있을 때 룬 아이콘 주변을 드래그하세요 (아이콘만 자동으로 잘라냄)')};
+
+/* ---------- 확대 영역 지정 창 ---------- */
+var Z={kind:null,s:1,ox:0,oy:0,sel:null,pan:null,raf:0},zc=$('zc'),zx=zc.getContext('2d');
+function zSize(){zc.width=zc.clientWidth;zc.height=zc.clientHeight}
+function zFit(){var W=v.videoWidth,Hh=v.videoHeight;if(!W)return;zSize();
+  Z.s=Math.min(zc.width/W,zc.height/Hh);Z.ox=(zc.width-W*Z.s)/2;Z.oy=(zc.height-Hh*Z.s)/2}
+function zFocus(r){var W=v.videoWidth,Hh=v.videoHeight;if(!r||!W)return;zSize();   /* 기존 영역이 있으면 그 주변을 크게 */
+  var pw=r.w*W*3,ph=r.h*Hh*3;Z.s=Math.min(40,Math.max(Z.s,Math.min(zc.width/pw,zc.height/ph)));
+  Z.ox=zc.width/2-(r.x+r.w/2)*W*Z.s;Z.oy=zc.height/2-(r.y+r.h/2)*Hh*Z.s}
+function openZoom(kind,title){if(!stream||!v.videoWidth)return;Z.kind=kind;Z.sel=null;$('zTitle').textContent=title;$('zoomer').hidden=false;
+  zFit();var focus=kind==='rune'?null:kind==='hunt'?cfg.hunt:cfg.rune;if(focus)zFocus(focus);
+  cancelAnimationFrame(Z.raf);(function loop(){zDraw();Z.raf=requestAnimationFrame(loop)})()}
+function closeZoom(){$('zoomer').hidden=true;cancelAnimationFrame(Z.raf);Z.kind=null;Z.sel=null;Z.pan=null}
+function zDraw(){var W=v.videoWidth,Hh=v.videoHeight;if(zc.width!==zc.clientWidth||zc.height!==zc.clientHeight)zSize();
+  zx.fillStyle='#000';zx.fillRect(0,0,zc.width,zc.height);if(!W)return;
+  zx.imageSmoothingEnabled=Z.s<2;zx.drawImage(v,Z.ox,Z.oy,W*Z.s,Hh*Z.s);
+  var rect=function(r,c,t){if(!r)return;var x=Z.ox+r.x*W*Z.s,y=Z.oy+r.y*Hh*Z.s,w=r.w*W*Z.s,h=r.h*Hh*Z.s;
+    zx.strokeStyle=c;zx.lineWidth=2;zx.strokeRect(x,y,w,h);if(t){zx.fillStyle=c;zx.font='13px sans-serif';zx.fillText(t,x+3,y-5)}};
+  rect(cfg.rune,'#a855f7','미니맵');rect(cfg.hunt,'#22c55e','MP');rect(Z.sel,'#facc15','');
+  $('zZoom').textContent=Math.round(Z.s*100)+'%'}
+function zPt(e){var b=zc.getBoundingClientRect();return{x:e.clientX-b.left,y:e.clientY-b.top}}
+function zVid(p){var W=v.videoWidth,Hh=v.videoHeight;
+  return{x:Math.min(1,Math.max(0,(p.x-Z.ox)/Z.s/W)),y:Math.min(1,Math.max(0,(p.y-Z.oy)/Z.s/Hh))}}
+function zZoom(f,p){var ns=Math.min(40,Math.max(0.1,Z.s*f));Z.ox=p.x-(p.x-Z.ox)*ns/Z.s;Z.oy=p.y-(p.y-Z.oy)*ns/Z.s;Z.s=ns}
+zc.addEventListener('wheel',function(e){e.preventDefault();zZoom(e.deltaY<0?1.25:0.8,zPt(e))},{passive:false});
+zc.oncontextmenu=function(e){e.preventDefault()};
+zc.onpointerdown=function(e){zc.setPointerCapture(e.pointerId);var p=zPt(e);
+  if(e.button===0){var a=zVid(p);Z.drag=a;Z.sel={x:a.x,y:a.y,w:0,h:0}}else Z.pan={x:p.x,y:p.y,ox:Z.ox,oy:Z.oy}};
+zc.onpointermove=function(e){var p=zPt(e);
+  if(Z.pan){Z.ox=Z.pan.ox+p.x-Z.pan.x;Z.oy=Z.pan.oy+p.y-Z.pan.y}
+  else if(Z.drag){var b=zVid(p),a=Z.drag;Z.sel={x:Math.min(a.x,b.x),y:Math.min(a.y,b.y),w:Math.abs(a.x-b.x),h:Math.abs(a.y-b.y)}}};
+zc.onpointerup=function(){if(Z.pan){Z.pan=null;return}if(!Z.drag)return;Z.drag=null;var r=Z.sel,kind=Z.kind;
+  if(!r||r.w*v.videoWidth<2||r.h*v.videoHeight<2){Z.sel=null;return}
+  closeZoom();
+  if(kind==='tpl')registerTpl(r);
+  else{cfg[kind]=r;resetState();$('hint').textContent='영역을 지정했습니다. 프리셋 ‘저장’을 눌러 기록하세요.'}
+  draw()};
+$('zIn').onclick=function(){zZoom(1.5,{x:zc.width/2,y:zc.height/2})};
+$('zOut').onclick=function(){zZoom(1/1.5,{x:zc.width/2,y:zc.height/2})};
+$('zFit').onclick=zFit;$('zCancel').onclick=closeZoom;
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!$('zoomer').hidden)closeZoom()});
+/* 샘플 등록: 드래그한 범위에서 가장 큰 '선명한 색' 덩어리를 찾아 테두리 2px 포함해 잘라냄 */
+function registerTpl(r){var g=grab(r);if(!g||g.w<2||g.h<2){$('hint').textContent='샘플을 가져오지 못했습니다. 다시 드래그해 주세요.';return}
+  var d=g.d,w=g.w,h=g.h,mask=new Uint8Array(w*h);
+  for(var i=0,k=0;k<w*h;i+=4,k++){var mx=Math.max(d[i],d[i+1],d[i+2]),df=mx-Math.min(d[i],d[i+1],d[i+2]);if(mx>=90&&df/mx>=0.35)mask[k]=1}
+  /* 드래그 중심에 가장 가까운 덩어리를 룬으로 선택 (주변의 다른 아이콘 무시) */
+  var cx=w/2,cy=h/2,dist=function(o){return Math.hypot(o.x+o.w/2-cx,o.y+o.h/2-cy)};
+  var bs=blobs(mask,w,h).filter(function(o){return o.c>=2}).sort(function(a,b){return dist(a)-dist(b)}),b=bs[0];
+  if(!b){$('hint').textContent='드래그한 범위에서 색이 있는 아이콘을 찾지 못했습니다. 룬이 보일 때 다시 시도하세요.';return}
+  var x0=Math.max(0,b.x-2),y0=Math.max(0,b.y-2),x1=Math.min(w-1,b.x+b.w+1),y1=Math.min(h-1,b.y+b.h+1),tw=x1-x0+1,th=y1-y0+1;
+  if(tw>60||th>60){$('hint').textContent='잡힌 아이콘이 너무 큽니다. 룬 주변만 좁게 드래그해 주세요.';return}
+  var px=[],kc=null,kv=-1;
+  for(var y=y0;y<=y1;y++)for(var x=x0;x<=x1;x++){var q=(y*w+x)*4;px.push(d[q],d[q+1],d[q+2]);
+    if(mask[y*w+x]&&x>=b.x&&x<b.x+b.w&&y>=b.y&&y<b.y+b.h){var mx=Math.max(d[q],d[q+1],d[q+2]),sv=mx-Math.min(d[q],d[q+1],d[q+2]);
+      if(sv>kv){kv=sv;kc=[d[q],d[q+1],d[q+2]]}}}
+  cfg.runeTpl={w:tw,h:th,px:px,vw:v.videoWidth,vh:v.videoHeight};
+  if(kc){cfg.runeColor='#'+kc.map(function(n){return (n<16?'0':'')+n.toString(16)}).join('');$('runeColor').value=cfg.runeColor}
+  TP=null;drawTpl();resetState();
+  $('hint').textContent='룬 샘플('+tw+'×'+th+'px)과 색상('+cfg.runeColor+')을 등록했습니다. 프리셋 ‘저장’을 눌러 기록하세요.'}
 function pos(e){var r=ov.getBoundingClientRect();return{x:Math.min(1,Math.max(0,(e.clientX-r.left)/r.width)),y:Math.min(1,Math.max(0,(e.clientY-r.top)/r.height))}}
 ov.onpointerdown=function(e){if(!picking)return;drag={a:pos(e),b:pos(e)};ov.setPointerCapture(e.pointerId)};
 ov.onpointermove=function(e){if(drag){drag.b=pos(e);draw()}};
 ov.onpointerup=function(){if(!drag)return;var d=drag;drag=null;
   var r={x:Math.min(d.a.x,d.b.x),y:Math.min(d.a.y,d.b.y),w:Math.abs(d.a.x-d.b.x),h:Math.abs(d.a.y-d.b.y)};
+  if(picking==='tpl'){picking=null;registerTpl(r);draw();return}
   if(r.w>0.002&&r.h>0.002){cfg[picking]=r;resetState()}picking=null;$('hint').textContent='영역을 지정했습니다. 프리셋 ‘저장’을 눌러 기록하세요.';draw()};
 function box(r,c,t){if(!r)return;octx.strokeStyle=c;octx.lineWidth=2;octx.strokeRect(r.x*ov.width,r.y*ov.height,r.w*ov.width,r.h*ov.height);octx.fillStyle=c;octx.font='13px sans-serif';octx.fillText(t,r.x*ov.width+3,r.y*ov.height-4)}
 function draw(){octx.clearRect(0,0,ov.width,ov.height);box(cfg.rune,'#a855f7','미니맵');box(cfg.hunt,'#22c55e','MP');
@@ -372,8 +498,8 @@ function draw(){octx.clearRect(0,0,ov.width,ov.height);box(cfg.rune,'#a855f7','�
 /* ---------- 분석 ---------- */
 var R,H,nextHunt=0,nextRune=0;
 function resetState(){var now=Date.now();
-  R={cand:0,active:false,miss:0,cnt:0,last:0,n:null,dia:0,boxes:[]};
-  H={ref:null,since:now,cnt:0,last:0,sec:0,stalled:false};
+  R={cand:0,active:false,miss:0,cnt:0,last:0,info:'',boxes:[]};
+  H={ref:null,since:now,cnt:0,last:0,sec:0,stalled:false,ep:false,chg:[]};
   nextHunt=0;nextRune=0;updateStatus()}
 function grab(r){var W=v.videoWidth,Hh=v.videoHeight;if(!W)return null;
   var w=Math.max(1,Math.floor(r.w*W)),h=Math.max(1,Math.floor(r.h*Hh));
@@ -390,30 +516,66 @@ function diamondScore(mask,w,x0,y0,bw,bh){var a=(bw-1)/2,b=(bh-1)/2,inT=0,inH=0,
   for(var y=0;y<bh;y++)for(var x=0;x<bw;x++){var dist=Math.abs(x-a)/a+Math.abs(y-b)/b,m=mask[(y0+y)*w+x0+x];
     if(dist<=1.01){inT++;inH+=m}else if(dist>=1.25){outT++;outH+=m}}
   return (inT?inH/inT:0)*(1-(outT?outH/outT:0))}
-function findDiamonds(d,w,h){var n=w*h,mask=new Uint8Array(n),cnt=0;
-  for(var i=0,k=0;k<n;i+=4,k++)if(purple(d[i],d[i+1],d[i+2])){mask[k]=1;cnt++}
-  var seen=new Uint8Array(n),stack=new Int32Array(n),found=[],lo=cfg.runeMin,hi=Math.max(cfg.runeMin,cfg.runeMax);
+/* 픽셀 덩어리(8방향 연결) 찾기 → [{x,y,w,h,c}] */
+function blobs(mask,w,h){var n=w*h,seen=new Uint8Array(n),stack=new Int32Array(n),out=[];
   for(var s=0;s<n;s++){if(!mask[s]||seen[s])continue;
     var sp=0,x0=w,y0=h,x1=-1,y1=-1,c=0;stack[sp++]=s;seen[s]=1;
     while(sp){var p=stack[--sp],px=p%w,py=(p-px)/w;c++;
       if(px<x0)x0=px;if(px>x1)x1=px;if(py<y0)y0=py;if(py>y1)y1=py;
       for(var dy=-1;dy<=1;dy++)for(var dx=-1;dx<=1;dx++){if(!dx&&!dy)continue;var nx=px+dx,ny=py+dy;
         if(nx<0||ny<0||nx>=w||ny>=h)continue;var q=ny*w+nx;if(mask[q]&&!seen[q]){seen[q]=1;stack[sp++]=q}}}
-    var bw=x1-x0+1,bh=y1-y0+1;
-    if(bw<lo||bh<lo||bw>hi||bh>hi)continue;
-    if(Math.max(bw,bh)/Math.min(bw,bh)>1.5)continue;
-    var fill=c/(bw*bh);if(fill<0.35||fill>0.72)continue;
-    var sc=diamondScore(mask,w,x0,y0,bw,bh);
-    if(sc>=cfg.runeShape/100)found.push({x:x0,y:y0,w:bw,h:bh,s:sc})}
-  return{cnt:cnt,found:found}}
+    out.push({x:x0,y:y0,w:x1-x0+1,h:y1-y0+1,c:c})}
+  return out}
+
+/* 방식 3: 마름모 모양 */
+function findDiamonds(d,w,h){var n=w*h,mask=new Uint8Array(n),cnt=0,lo=cfg.runeMin,hi=Math.max(cfg.runeMin,cfg.runeMax);
+  for(var i=0,k=0;k<n;i+=4,k++)if(purple(d[i],d[i+1],d[i+2])){mask[k]=1;cnt++}
+  var found=blobs(mask,w,h).filter(function(b){
+    if(b.w<Math.max(3,lo)||b.h<Math.max(3,lo)||b.w>hi||b.h>hi)return false;
+    if(Math.max(b.w,b.h)/Math.min(b.w,b.h)>1.5)return false;
+    var fill=b.c/(b.w*b.h);if(fill<0.35||fill>0.72)return false;
+    b.s=diamondScore(mask,w,b.x,b.y,b.w,b.h);return b.s>=cfg.runeShape/100});
+  var best=found.reduce(function(a,f){return !a||f.s>a.s?f:a},null);
+  return{found:found,info:'보라색 픽셀 '+cnt+' · 마름모 '+found.length+'개',
+    desc:best?best.w+'×'+best.h+' 마름모':''}}
+
+/* 방식 2: 색상 덩어리 — 등록한 룬 색과 가까운 픽셀이 작게 뭉쳐 있으면 룬 */
+function hex2rgb(s){var n=parseInt(s.slice(1),16);return[n>>16&255,n>>8&255,n&255]}
+function findColor(d,w,h){var t=hex2rgb(cfg.runeColor),tol2=cfg.runeTol*cfg.runeTol,n=w*h,mask=new Uint8Array(n),cnt=0,
+    hi=Math.max(cfg.runeMin,cfg.runeMax);
+  for(var i=0,k=0;k<n;i+=4,k++){var a=d[i]-t[0],b=d[i+1]-t[1],c=d[i+2]-t[2];if(a*a+b*b+c*c<=tol2){mask[k]=1;cnt++}}
+  var found=blobs(mask,w,h).filter(function(b){
+    return b.c>=cfg.runeMinPx&&b.w>=cfg.runeMin&&b.h>=cfg.runeMin&&b.w<=hi&&b.h<=hi&&Math.max(b.w,b.h)/Math.min(b.w,b.h)<=2});
+  var best=found.reduce(function(a,f){return !a||f.c>a.c?f:a},null);
+  return{found:found,info:'룬 색상 픽셀 '+cnt+' · 덩어리 '+found.length+'개',desc:best?'색상 덩어리 '+best.c+'px':''}}
+
+/* 방식 1: 샘플 이미지 비교 — 등록한 룬 아이콘과 같은 그림이 있는지 픽셀 단위로 비교 */
+var TP=null;
+function prepTpl(){var T=cfg.runeTpl;if(!T)return null;if(TP&&TP.src===T)return TP;
+  var idx=[],key=null,kv=-1;
+  for(var i=0;i<T.w*T.h;i++){var r=T.px[i*3],g=T.px[i*3+1],b=T.px[i*3+2],mx=Math.max(r,g,b),sat=mx?(mx-Math.min(r,g,b))/mx:0;
+    if(mx>=70)idx.push(i);var sc=sat*mx;if(sc>kv){kv=sc;key={x:i%T.w,y:Math.floor(i/T.w),r:r,g:g,b:b}}}
+  if(!idx.length)for(var j=0;j<T.w*T.h;j++)idx.push(j);
+  TP={src:T,idx:idx,key:key};return TP}
+function findSample(d,w,h){var T=cfg.runeTpl,P=prepTpl();
+  if(!T||!P)return{found:[],info:'샘플을 먼저 등록하세요',desc:''};
+  var tw=T.w,th=T.h,px=T.px,k=P.key,idx=P.idx,best=null;
+  for(var y=0;y<=h-th;y++)for(var x=0;x<=w-tw;x++){
+    var q0=((y+k.y)*w+x+k.x)*4,a=d[q0]-k.r,b=d[q0+1]-k.g,c=d[q0+2]-k.b;if(a*a+b*b+c*c>8100)continue;
+    var sum=0;for(var j=0;j<idx.length;j++){var ii=idx[j],tx=ii%tw,ty=(ii-tx)/tw,q=((y+ty)*w+x+tx)*4,p=ii*3;
+      sum+=Math.abs(d[q]-px[p])+Math.abs(d[q+1]-px[p+1])+Math.abs(d[q+2]-px[p+2])}
+    var s=Math.max(0,1-sum/(idx.length*3)/96);if(!best||s>best.s)best={x:x,y:y,w:tw,h:th,s:s}}
+  var ok=best&&best.s>=cfg.runeSim/100;
+  return{found:ok?[best]:[],info:'샘플 일치도 '+(best?Math.round(best.s*100)+'%':'-'),desc:ok?'샘플 일치 '+Math.round(best.s*100)+'%':''}}
 
 function checkRune(now){var g=grab(cfg.rune);if(!g){nextRune=now+1000;return}
-  var res=findDiamonds(g.d,g.w,g.h),rr=cfg.rune;R.n=res.cnt;R.dia=res.found.length;
+  var noTpl=cfg.runeMode==='sample'&&!cfg.runeTpl;
+  var fn=cfg.runeMode==='color'||noTpl?findColor:cfg.runeMode==='diamond'?findDiamonds:findSample;
+  var res=fn(g.d,g.w,g.h),rr=cfg.rune;R.info=(noTpl?'샘플 미등록 → 색상 덩어리로 탐지 중 · ':'')+res.info;
   R.boxes=res.found.map(function(f){return{x:rr.x+f.x/g.w*rr.w,y:rr.y+f.y/g.h*rr.h,w:f.w/g.w*rr.w,h:f.h/g.h*rr.h}});
-  var best=res.found.reduce(function(a,f){return !a||f.s>a.s?f:a},null);
-  var n=best?best.w+'×'+best.h+' 마름모':'';
+  var n=res.desc;
   if(!$('stage').classList.contains('hide'))draw();
-  var hit=!!best;
+  var hit=res.found.length>0;
   if(R.active){
     if(hit){R.miss=0;
       if(R.cnt<LIM[cfg.runeCnt]&&now-R.last>=cfg.runeInt*1000){R.cnt++;R.last=now;notify('rune','룬 재알림 ('+R.cnt+'번째) · '+n)}}
@@ -429,11 +591,15 @@ function checkRune(now){var g=grab(cfg.rune);if(!g){nextRune=now+1000;return}
 
 function checkHunt(now){var g=grab(cfg.hunt);if(!g)return;var d=g.d,m=new Uint8Array(d.length/4);
   for(var i=0,k=0;i<d.length;i+=4,k++)m[k]=Math.min(d[i],d[i+1],d[i+2])>=cfg.huntBr?1:0;
-  if(!H.ref||H.ref.length!==m.length){H.ref=m;H.since=now;H.cnt=0}
+  /* H.ep: 멈춤 알림이 한 번이라도 울린 '멈춤 구간'. 이 구간 동안은 알림 횟수만큼만 울리고,
+     10초 안에 변화가 huntResume번 이상 감지돼 '사냥 재개'로 판정될 때까지 새 알림을 보내지 않음 */
+  if(!H.ref||H.ref.length!==m.length){H.ref=m;H.since=now}
   else{var df=0;for(var j=0;j<m.length;j++)if(m[j]!==H.ref[j])df++;
-    if(df>=cfg.huntD){H.ref=m;H.since=now;H.cnt=0}}
+    if(df>=cfg.huntD){H.ref=m;H.since=now;
+      if(H.ep){H.chg.push(now);H.chg=H.chg.filter(function(t){return now-t<=10000});
+        if(H.chg.length>=cfg.huntResume){H.ep=false;H.cnt=0;H.chg=[];addLog('sys','사냥 재개 감지 · 멈춤 알림 다시 대기')}}}}
   H.sec=Math.floor((now-H.since)/1000);H.stalled=H.sec>=cfg.huntSec;
-  if(H.stalled&&H.cnt<LIM[cfg.huntCnt]&&(H.cnt===0||now-H.last>=cfg.huntInt*1000)){H.cnt++;H.last=now;
+  if(H.stalled&&H.cnt<LIM[cfg.huntCnt]&&(H.cnt===0||now-H.last>=cfg.huntInt*1000)){H.cnt++;H.last=now;H.ep=true;
     notify('hunt','사냥 멈춤 · MP 숫자 '+H.sec+'초째 변화 없음'+(H.cnt>1?' ('+H.cnt+'번째)':''))}}
 
 function tick(){if(paused)return;var now=Date.now();
@@ -448,11 +614,16 @@ function runeState(){if(!cfg.rune)return['꺼짐','off'];if(!stream)return['대�
   if(R.active)return['룬 감지됨 ('+R.cnt+'번 알림)','alert'];
   if(R.cand)return['확인 중… '+((Date.now()-R.cand)/1000).toFixed(1)+'초','warn'];return['룬 없음','ok']}
 function huntState(){if(!cfg.hunt)return['꺼짐','off'];if(!stream)return['대기 중','off'];if(paused)return['일시정지','off'];
-  if(H.stalled)return['멈춤 의심 ('+H.sec+'초)','alert'];return['사냥 중','ok']}
+  var done=H.ep&&H.cnt>=LIM[cfg.huntCnt];
+  if(done&&H.chg.length)return['재개 확인 중 ('+H.chg.length+'/'+cfg.huntResume+')','warn'];
+  if(done)return['알림 완료 · 사냥 재개 대기','warn'];
+  if(H.stalled)return['멈춤 의심 ('+H.sec+'초)','alert'];
+  if(H.ep)return['재개 확인 중 ('+H.chg.length+'/'+cfg.huntResume+')','warn'];
+  return['사냥 중','ok']}
 function updateStatus(){if(!R)return;var r=runeState(),h=huntState();
   $('runeS').textContent=r[0];$('runeS').className='status'+(r[1]==='alert'?' alert':r[1]==='warn'?' warn':'');
   $('huntS').textContent=h[0];$('huntS').className='status'+(h[1]==='alert'?' alert':'');
-  $('runeM').textContent=stream&&cfg.rune&&R.n!==null?'보라색 픽셀: '+R.n+' · 마름모: '+R.dia+'개':'보라색 픽셀: -';
+  $('runeM').textContent=stream&&cfg.rune&&R.info?R.info:'-';
   $('huntM').textContent='변화 없는 시간: '+(stream&&cfg.hunt?H.sec+'초':'-');
   $('pause').textContent=paused?'▶ 다시 시작':'⏸ 전체 정지';$('pause').className=paused?'primary':'danger';
   renderPip(r,h)}
