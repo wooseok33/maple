@@ -73,10 +73,11 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
 .chip i{width:8px;height:8px;border-radius:50%;background:var(--faint);display:inline-block}
 .chip.done i{background:var(--ok)}
 .chip.done{border-color:rgba(61,220,151,.4)}
-.stage{position:relative;background:#000;border-radius:10px;overflow:hidden;line-height:0;margin-top:14px}
+.stage{background:#000;border-radius:10px;overflow:hidden;line-height:0;margin-top:14px;display:flex;justify-content:center}
 .stage.hide{display:none}
-.stage video{width:100%;display:block;max-height:46vh;object-fit:contain}
-.stage canvas{position:absolute;inset:0;width:100%;height:100%}
+.vwrap{position:relative;line-height:0;max-width:100%}
+.vwrap video{display:block;max-width:100%;max-height:46vh;width:auto;height:auto}
+.vwrap canvas{position:absolute;inset:0;width:100%;height:100%}
 #hint{margin-top:10px;min-height:0}
 #hint:empty{display:none}
 
@@ -207,7 +208,7 @@ details.adv[open]{padding-bottom:12px}
         <button class="ghost sm" id="stop" disabled>공유 종료</button>
       </div>
     </div>
-    <div class="stage" id="stage"><video id="v" muted playsinline></video><canvas id="ov"></canvas></div>
+    <div class="stage" id="stage"><div class="vwrap"><video id="v" muted playsinline></video><canvas id="ov"></canvas></div></div>
   </div>
   <p class="note" id="hint"></p>
 </section>
@@ -492,7 +493,7 @@ function fillLog(doc,ul,max){if(!ul)return;ul.textContent='';var list=logs.slice
     var k=doc.createElement('span');k.className='k';k.textContent=KN[e.k]||'';
     var m=doc.createElement('span');m.className='m';m.textContent=String(e.m);
     li.appendChild(tm);li.appendChild(k);li.appendChild(m);ul.appendChild(li)})}
-function renderLog(){fillLog(document,$('log'));if(pip)fillLog(pip.document,pip.document.getElementById('plog'),3)}
+function renderLog(){fillLog(document,$('log'));if(pip)fillLog(pip.document,pip.document.getElementById('plog'),5)}
 $('logClear').onclick=function(){logs=[];try{localStorage.removeItem('maple-log')}catch(e){}renderLog()};
 function notify(kind,msg){addLog(kind,msg);sound(kind,kind==='rune'?cfg.runeSnd:kind==='hunt'?cfg.huntSnd:cfg.timerSnd);
   try{if('Notification' in window&&Notification.permission==='granted')new Notification('재획 알리미',{body:msg})}catch(e){}}
@@ -571,7 +572,10 @@ function startTicker(){stopTicker();
 function stopTicker(){if(tw){tw.terminate();tw=null}if(ti){clearInterval(ti);ti=null}}
 
 /* ---------- 영역 지정 ---------- */
-function sizeOv(){ov.width=ov.clientWidth;ov.height=ov.clientHeight}
+function sizeOv(){var w=ov.clientWidth,h=ov.clientHeight;if(ov.width!==w||ov.height!==h){ov.width=w;ov.height=h}}
+/* 영상 크기·창 크기가 바뀌면 영역 표시를 다시 맞춤 */
+v.addEventListener('resize',function(){sizeOv();draw()});v.addEventListener('loadedmetadata',function(){sizeOv();draw()});
+try{new ResizeObserver(function(){sizeOv();draw()}).observe(ov)}catch(e){}
 window.addEventListener('resize',function(){sizeOv();draw()});
 $('pickRune').onclick=function(){openZoom('rune','미니맵 영역 지정 — 미니맵 전체를 드래그하세요')};
 $('pickHunt').onclick=function(){
@@ -811,11 +815,19 @@ function updateStatus(){if(!R)return;var r=runeState(),h=huntState();
 var ICON_ON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>';
 var ICON_OFF='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.7 3A6 6 0 0 1 18 8a21.3 21.3 0 0 0 .6 5"/><path d="M17 17H3s3-2 3-9a4.67 4.67 0 0 1 .3-1.7"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><path d="m2 2 20 20"/></svg>';
 var ICON_VOL='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg>';
+var ICON_PIN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg>';
+/* 핀 고정: PIP 창은 브라우저가 항상 맨 위에 띄움. 고정하면 실수로 닫히지 않게 ✕를 잠그고,
+   이 페이지(탭)를 닫으려 할 때도 확인을 받음 (탭이 닫히면 PIP도 함께 닫히기 때문) */
+var pinned=false;try{pinned=localStorage.getItem('maple-pin')==='1'}catch(e){}
+function pinUI(){try{localStorage.setItem('maple-pin',pinned?'1':'0')}catch(e){}if(!pip)return;var d=pip.document,b=d.getElementById('pPin'),c=d.getElementById('pClose');
+  b.className=pinned?'pin':'';b.title=pinned?'고정됨 · 항상 맨 위에 유지, 실수로 닫히지 않음 (눌러서 해제)':'고정하기 · 항상 맨 위 유지 + 닫기 잠금';
+  c.disabled=pinned;c.title=pinned?'고정 중에는 닫을 수 없습니다':'PIP 닫기'}
+window.addEventListener('beforeunload',function(e){if(pip&&pinned){e.preventDefault();e.returnValue=''}});
 var PIPCSS='*{box-sizing:border-box}html,body{margin:0;height:100%}'+
  'body{background:#0f1012;color:#e9ecef;font-family:"Pretendard","Noto Sans KR",system-ui,sans-serif;display:flex;flex-direction:column;padding:10px;gap:10px;font-size:14px}'+
  'header{display:flex;align-items:center;gap:6px}header b{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sp{flex:1}'+
  'button{height:34px;min-width:34px;border:0;border-radius:10px;background:#212328;color:#c9ced6;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;font:inherit;font-weight:700;padding:0 9px}'+
- 'button:hover{background:#2b2e34}button.on{background:#ff5b6b;color:#fff}button.pill{border-radius:999px}'+
+ 'button:hover{background:#2b2e34}button.on{background:#ff5b6b;color:#fff}button.pin{background:#2b6cb0;color:#fff}button:disabled{opacity:.35;cursor:not-allowed}button.pill{border-radius:999px}'+
  'header svg{width:18px;height:18px}#pVolBox input{width:100%}'+
  '.center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:110px}'+
  '#pTimer{font-size:44px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1;color:#e9ecef}'+
@@ -833,7 +845,7 @@ var PIPCSS='*{box-sizing:border-box}html,body{margin:0;height:100%}'+
  '@keyframes blink{50%{opacity:.35}}';
 var PIPHTML='<header><span>🍁</span><b id="pTitle">타이머</b><span class="sp"></span>'+
  '<button id="pPause"></button><button id="pVol" class="pill" title="볼륨 조절">'+ICON_VOL+'<span id="pVolV"></span></button>'+
- '<button id="pClose" title="PIP 닫기">✕</button></header>'+
+ '<button id="pPin" title="고정">'+ICON_PIN+'</button><button id="pClose" title="PIP 닫기">✕</button></header>'+
  '<div id="pVolBox" hidden><input type="range" id="pVolR" min="0" max="100" aria-label="볼륨"></div>'+
  '<section class="center"><div id="pTimer"></div><div id="pSub"></div>'+
  '<div class="tbtns"><button id="pRestart" title="타이머를 처음부터 다시 시작">↻ 재시작</button><button id="pToggle"></button></div></section>'+
@@ -843,7 +855,7 @@ var PIPHTML='<header><span>🍁</span><b id="pTitle">타이머</b><span class="s
 $('pipBtn').onclick=async function(){
   if(pip){pip.close();return}
   if(!('documentPictureInPicture' in window)){$('hint').textContent='이 브라우저는 PIP 창을 지원하지 않습니다. Chrome 또는 Edge 최신 버전에서 열어주세요.';return}
-  var w;try{w=await documentPictureInPicture.requestWindow({width:340,height:420})}
+  var w;try{w=await documentPictureInPicture.requestWindow({width:340,height:500})}
   catch(e){$('hint').textContent='PIP 창을 열지 못했습니다. ('+(e&&e.name||'오류')+')';return}
   pip=w;var d=w.document;d.title='재획 알리미';
   var st=d.createElement('style');st.textContent=PIPCSS;d.head.appendChild(st);
@@ -851,7 +863,8 @@ $('pipBtn').onclick=async function(){
   d.getElementById('pPause').onclick=function(){ac();setPaused(!paused)};
   d.getElementById('pRestart').onclick=timerRestart;
   d.getElementById('pToggle').onclick=timerToggle;
-  d.getElementById('pClose').onclick=function(){w.close()};
+  d.getElementById('pClose').onclick=function(){if(!pinned)w.close()};
+  d.getElementById('pPin').onclick=function(){pinned=!pinned;pinUI()};pinUI();
   d.getElementById('pVol').onclick=function(){var b=d.getElementById('pVolBox');b.hidden=!b.hidden};
   d.getElementById('pVolR').oninput=function(e){setVol(+e.target.value)};
   w.addEventListener('pagehide',function(){pip=null;$('pipBtn').textContent='PIP 창 열기'});
