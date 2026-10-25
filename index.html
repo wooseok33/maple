@@ -125,6 +125,14 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
 .tbtn{display:grid;grid-template-columns:1fr 1fr auto;gap:8px}
 .sample{display:flex;align-items:center;gap:12px;padding:10px;border:1px dashed var(--line2);border-radius:10px;margin-top:12px}
 .sample canvas{width:44px;height:44px;border-radius:8px;background:#000;image-rendering:pixelated;flex:none}
+.lbig{font-size:26px;font-weight:800;text-align:center;line-height:1.2;margin:8px 0 2px;color:var(--ok)}
+.lbig.off{color:var(--faint)}.lbig.alert{color:var(--bad);animation:blink 1s infinite}.lbig.warn{color:var(--warn)}
+.gauge{margin-top:12px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.gauge .gh{display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:600}
+.gauge input{width:100%;margin:8px 0 2px;accent-color:var(--accent)}
+.gauge .ends{display:flex;justify-content:space-between;font-size:11px;color:var(--faint)}
+#lieAck{width:100%;margin-top:10px}
+iframe.liefr{position:fixed;left:0;bottom:0;width:480px;height:360px;border:0;opacity:0;pointer-events:none;z-index:-1}
 .strip{display:block;width:100%;height:30px;border-radius:8px;background:#000;margin-bottom:8px;image-rendering:pixelated}
 
 /* 접는 설정 */
@@ -164,7 +172,7 @@ details.adv[open]{padding-bottom:12px}
 .log li:first-child{border-top:0}
 .log time{color:var(--faint);font-variant-numeric:tabular-nums;flex:none}
 .log .k{flex:none;font-weight:700;min-width:3em}
-.log .rune .k{color:var(--rune)}.log .hunt .k{color:var(--bad)}.log .timer .k{color:var(--timer)}.log .buff .k{color:var(--warn)}.log .boost .k{color:#ff9a3c}
+.log .rune .k{color:var(--rune)}.log .hunt .k{color:var(--bad)}.log .timer .k{color:var(--timer)}.log .buff .k{color:var(--warn)}.log .boost .k{color:#ff9a3c}.log .lie .k{color:#ff7ab6}
 .log .sys{color:var(--faint)}.log .empty{color:var(--faint)}
 .foot{text-align:center;color:var(--faint);font-size:12px;margin-top:22px}
 
@@ -236,7 +244,7 @@ body.locked>.top,body.locked>main,body.locked>#zoomer{display:none!important}
 <section class="card screen">
   <div id="emptyState" class="empty">
     <h2>게임 화면을 연결하세요</h2>
-    <p>메이플스토리 창을 공유하면 버프 · 룬 · 사냥 멈춤 · 부스터를 감지해 알려드립니다.<span class="info" tabindex="0" data-tip="공유 화면은 이 브라우저 안에서만 분석되며 전송되지 않습니다.
+    <p>메이플스토리 창을 공유하면 거짓말 탐지기 · 버프 · 룬 · 사냥 멈춤 · 부스터를 감지해 알려드립니다.<span class="info" tabindex="0" data-tip="공유 화면은 이 브라우저 안에서만 분석되며 전송되지 않습니다.
 게임에는 어떤 입력도 보내지 않습니다.
 공유 창에서 ‘창’ 탭 → MapleStory를 선택하세요.">i</span></p>
     <button class="primary lg" id="start">화면 공유 시작</button>
@@ -269,6 +277,33 @@ body.locked>.top,body.locked>main,body.locked>#zoomer{display:none!important}
 </section>
 
 <div class="mods">
+  <!-- 거짓말 탐지기 -->
+  <section class="card" data-mod="lie">
+    <div class="mh"><h3><span class="ico">⚠</span>거짓말 탐지기 알림<span class="info l" tabindex="0" data-tip="거짓말 탐지기 창이 뜨면 바로 알려줍니다.
+클릭형 · 투명 문자형 · 비올레타형 · 문자 입력형 · 레인보우형을 찾습니다.
+따로 영역을 지정할 필요 없이 공유 화면 전체를 봅니다.
+알림만 보내고, 게임에는 어떤 입력도 하지 않습니다.
+감지 엔진: M-ALERT (m-alert.com)">i</span></h3><div class="rt"><span class="status" id="lieS">대기 중</span><button class="sw" data-k="lie" role="switch" title="켜기/끄기"><b></b></button></div></div>
+    <div class="lbig off" id="lieD">--</div>
+    <div class="meta mt" id="lieM">-</div>
+    <button class="danger" id="lieAck" hidden>확인 — 알림 멈추기</button>
+    <div class="gauge">
+      <div class="gh"><span>탐지 민감도 <span class="info l" tabindex="0" data-tip="높을수록 작은 흔적에도 반응하고(놓침↓ 오탐↑),
+낮을수록 확실할 때만 반응합니다(오탐↓ 놓침↑).
+5가 원래 기준입니다. 오탐이 있으면 내리고, 놓치면 올리세요.">i</span></span><b id="lieSensV"></b></div>
+      <input type="range" id="lieSens" min="1" max="10" step="1" aria-label="탐지 민감도">
+      <div class="ends"><span>둔감 (확실할 때만)</span><span>민감 (작은 흔적도)</span></div>
+    </div>
+    <details class="set"><summary>설정</summary>
+      <div class="sgrid">
+        <div class="fl"><span>알림음</span><span class="row"><select id="lieSnd"></select><button class="icon" id="lieTest" title="미리 듣기">▶</button></span></div>
+        <div class="fr"><span>알림 횟수 <span class="info l" tabindex="0" data-tip="거짓말 탐지기가 떠 있는 동안 반복해서 울리는 최대 횟수입니다.
+‘계속’이면 확인을 누르거나 창이 사라질 때까지 울립니다.">i</span> <b id="lieCntV"></b></span><input type="range" id="lieCnt" min="0" max="3"></div>
+        <div class="fl"><span>반복 간격</span><span class="row"><input type="number" id="lieInt" min="1" max="60"><span class="u">초</span></span></div>
+      </div>
+    </details>
+  </section>
+
   <!-- 버프 -->
   <section class="card" data-mod="buff">
     <div class="mh"><h3><span class="ico">✦</span>버프 알림<span class="info l" tabindex="0" data-tip="AI가 화면 오른쪽 위 버프창을 자동으로 찾고, 아이콘 위 남은 시간을 직접 읽어
@@ -431,7 +466,7 @@ PIP 창의 ‘재시작’으로 바로 다시 시작할 수 있습니다.
   <div class="mh" style="margin-bottom:8px"><h3>알림 기록</h3><button class="ghost sm" id="logClear">지우기</button></div>
   <ul class="log" id="log"></ul>
 </section>
-<p class="foot">공유 화면은 이 브라우저 안에서만 분석되며 어디에도 전송되지 않습니다.<br>버프 인식 AI 모델 제공: maple-timer.com · AI 실행 엔진: ONNX Runtime Web (MIT License)</p>
+<p class="foot">공유 화면은 이 브라우저 안에서만 분석되며 어디에도 전송되지 않습니다.<br>버프 인식 AI 모델 제공: maple-timer.com · AI 실행 엔진: ONNX Runtime Web (MIT License)<br>거짓말 탐지기 감지 엔진: M-ALERT (m-alert.com) · 글자 인식: Tesseract.js (Apache-2.0)</p>
 </main>
 
 <div id="zoomer" hidden>
@@ -489,16 +524,16 @@ var v=$('v'),ov=$('ov'),octx=ov.getContext('2d');
 var work=document.createElement('canvas'),wctx=work.getContext('2d',{willReadFrequently:true});
 
 /* ---------- 설정 ---------- */
-var DEF={buffWarn:10,buffEndOn:true,buffAuto:false,buffAutoG:{expCoupon:true,potion:true,unionWealth:true,unionLuck:true},on:{timer:true,rune:true,hunt:true,buff:true,boost:true},boost:null,boostWarn:10,boostEnd:true,boostSnd:'siren',boostCnt:0,boostInt:5,
+var DEF={buffWarn:10,buffEndOn:true,buffAuto:false,buffAutoG:{expCoupon:true,potion:true,unionWealth:true,unionLuck:true},on:{lie:true,timer:true,rune:true,hunt:true,buff:true,boost:true},lieSens:5,lieSnd:'geotam',lieCnt:3,lieInt:2,boost:null,boostWarn:10,boostEnd:true,boostSnd:'siren',boostCnt:0,boostInt:5,
   rune:null,hunt:null,buffs:[],buffEarly:false,buffChange:30,buffHold:2,buffCnt:0,buffInt:5,buffSnd:'beep',runeMode:'sample',runeTpl:null,runeColor:'#dd66ff',runeTol:70,runeMinPx:3,runeSim:70,
   runeMin:2,runeMax:40,runeShape:70,runeHold:1,runeCnt:0,runeInt:5,runeSnd:'quiet',
   huntMode:'exp',huntSec:15,huntBr:170,huntD:5,huntCnt:1,huntInt:5,huntResume:2,huntSnd:'quiet',
   timerMin:30,timerSec:0,timerCnt:1,timerInt:5,timerSnd:'chime',timerAuto:false};
-var RANGE={buffWarn:[0,120],boostWarn:[0,99],boostCnt:[0,3],boostInt:[1,60],buffChange:[10,90],buffHold:[1,10],buffCnt:[0,3],buffInt:[1,60],runeTol:[20,150],runeMinPx:[1,100],runeSim:[50,98],runeMin:[1,30],runeMax:[6,80],runeShape:[50,95],runeHold:[0.5,5],runeCnt:[0,3],runeInt:[1,60],
+var RANGE={lieSens:[1,10],lieCnt:[0,3],lieInt:[1,60],buffWarn:[0,120],boostWarn:[0,99],boostCnt:[0,3],boostInt:[1,60],buffChange:[10,90],buffHold:[1,10],buffCnt:[0,3],buffInt:[1,60],runeTol:[20,150],runeMinPx:[1,100],runeSim:[50,98],runeMin:[1,30],runeMax:[6,80],runeShape:[50,95],runeHold:[0.5,5],runeCnt:[0,3],runeInt:[1,60],
   huntSec:[1,600],huntBr:[120,255],huntD:[1,40],huntCnt:[0,3],huntInt:[1,60],huntResume:[1,5],
   timerMin:[0,600],timerSec:[0,59],timerCnt:[0,3],timerInt:[1,60]};
-var NUM=Object.keys(RANGE),STR=['runeSnd','huntSnd','timerSnd','buffSnd','boostSnd'],BOOL=['timerAuto','buffEarly','boostEnd','buffEndOn','buffAuto'];
-var SOUNDS={quiet:'조용한 띵동',chime:'차임벨',beep:'경보 삐삐',siren:'사이렌',clock:'자명종',coin:'코인 띠링',bell:'종소리',
+var NUM=Object.keys(RANGE),STR=['lieSnd','runeSnd','huntSnd','timerSnd','buffSnd','boostSnd'],BOOL=['timerAuto','buffEarly','boostEnd','buffEndOn','buffAuto'];
+var SOUNDS={geotam:'거탐 거탐 (음성)',quiet:'조용한 띵동',chime:'차임벨',beep:'경보 삐삐',siren:'사이렌',clock:'자명종',coin:'코인 띠링',bell:'종소리',
   marimba:'마림바',whistle:'호루라기',rise:'상승음',horn:'경적',pulse:'펄스 경보',loud:'큰 음성'};
 var LIM=[1,3,5,Infinity],LBL=['1번만','3번까지','5번까지','사라질 때까지 계속'],TLBL=['1번만','3번까지','5번까지','재시작·초기화할 때까지 계속'];
 var cfg=Object.assign({},DEF),vol=70,paused=false,pip=null;cfg.buffs=[];cfg.on=Object.assign({},DEF.on);
@@ -542,8 +577,10 @@ function persist(){try{localStorage.setItem('maple-presets',JSON.stringify(prese
 STR.forEach(function(k){var s=$(k);Object.keys(SOUNDS).forEach(function(id){
   var o=document.createElement('option');o.value=id;o.textContent=SOUNDS[id];s.appendChild(o)})});
 function show(id){var o=$(id+'V');if(!o)return;
-  o.textContent=id==='timerCnt'?TLBL[$(id).value]:id==='huntCnt'?HLBL[$(id).value]:id==='buffCnt'?BLBL[$(id).value]:id==='boostCnt'?OLBL[$(id).value]:/Cnt$/.test(id)?LBL[$(id).value]:$(id).value}
+  o.textContent=id==='lieSens'?sensLbl(+$(id).value):id==='lieCnt'?LLBL[$(id).value]:id==='timerCnt'?TLBL[$(id).value]:id==='huntCnt'?HLBL[$(id).value]:id==='buffCnt'?BLBL[$(id).value]:id==='boostCnt'?OLBL[$(id).value]:/Cnt$/.test(id)?LBL[$(id).value]:$(id).value}
 var OLBL=['1번만','3번까지','5번까지','끝날 때까지 계속'];
+var LLBL=['1번만','3번까지','5번까지','확인하거나 사라질 때까지 계속'];
+function sensLbl(g){return g+' · '+(g===5?'보통 (기본)':g<5?(g<=2?'매우 둔감':'둔감'):(g>=9?'매우 민감':'민감'))}
 var BLBL=['1번만','3번까지','5번까지','버프를 다시 켤 때까지 계속'];
 var HLBL=['1번만','3번까지','5번까지','사냥 재개될 때까지 계속'];
 function fill(){NUM.concat(STR).forEach(function(k){$(k).value=cfg[k];show(k)});
@@ -631,13 +668,15 @@ var PLAY={
 };
 $('boost').value=String(boost);
 $('boost').onchange=function(){boost=+$('boost').value;try{localStorage.setItem('maple-boost',boost)}catch(e){}if(master)master.gain.value=gainVal()};
-var SPEECH={boost:'부스터 시간을 확인해주세요',rune:'룬이 나타났어요. 확인해주세요',hunt:'사냥이 멈췄어요. 확인해주세요',timer:'타이머 시간이 다 됐어요',buff:'버프가 끝났어요. 확인해주세요'};
+var SPEECH={lie:'거짓말 탐지기가 떴어요. 확인해주세요',boost:'부스터 시간을 확인해주세요',rune:'룬이 나타났어요. 확인해주세요',hunt:'사냥이 멈췄어요. 확인해주세요',timer:'타이머 시간이 다 됐어요',buff:'버프가 끝났어요. 확인해주세요'};
 function speak(text){try{speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(text);u.lang='ko-KR';u.volume=vol/100;speechSynthesis.speak(u)}
   catch(e){sound('','quiet')}}
 function sound(kind,mode){
+  if(mode==='geotam'){speak('거탐 거탐');return}
   if(mode==='loud'){speak(SPEECH[kind]||SPEECH.timer);return}
   if(!ac())return;try{(PLAY[mode]||PLAY.quiet)(actx.currentTime+0.03)}catch(e){}}
 $('runeTest').onclick=function(){sound('rune',$('runeSnd').value)};
+$('lieTest').onclick=function(){sound('lie',$('lieSnd').value)};
 $('huntTest').onclick=function(){sound('hunt',$('huntSnd').value)};
 function autoGUI(){$('buffAutoGs').hidden=!cfg.buffAuto;Array.prototype.forEach.call(document.querySelectorAll('#buffAutoGs input[data-g]'),function(c){c.checked=!!cfg.buffAutoG[c.dataset.g]})}
 $('buffAuto').addEventListener('change',function(){if(cfg.buffAuto){if(AI.st==='ready')aiEnsureGroups();else if(stream)aiInit()}BSA={};AI.gcache=null;autoGUI();renderBuffs()});
@@ -648,7 +687,7 @@ $('buffTest').onclick=function(){sound('buff',$('buffSnd').value)};
 $('timerTest').onclick=function(){sound('timer',$('timerSnd').value)};
 
 /* ---------- 알림 기록 ---------- */
-var KN={boost:'부스터',rune:'룬',hunt:'사냥',timer:'타이머',buff:'버프',sys:'시스템'};
+var KN={lie:'거탐',boost:'부스터',rune:'룬',hunt:'사냥',timer:'타이머',buff:'버프',sys:'시스템'};
 function p2(n){return (n<10?'0':'')+n}
 function when(ts){var d=new Date(ts),now=new Date(),s=p2(d.getHours())+':'+p2(d.getMinutes())+':'+p2(d.getSeconds());
   return d.toDateString()===now.toDateString()?s:(d.getMonth()+1)+'/'+d.getDate()+' '+s}
@@ -663,8 +702,57 @@ function fillLog(doc,ul,max){if(!ul)return;ul.textContent='';var list=logs.slice
     li.appendChild(tm);li.appendChild(k);li.appendChild(m);ul.appendChild(li)})}
 function renderLog(){fillLog(document,$('log'));if(pip)fillLog(pip.document,pip.document.getElementById('plog'),5)}
 $('logClear').onclick=function(){logs=[];try{localStorage.removeItem('maple-log')}catch(e){}renderLog()};
-function notify(kind,msg){addLog(kind,msg);sound(kind,kind==='rune'?cfg.runeSnd:kind==='hunt'?cfg.huntSnd:kind==='buff'?cfg.buffSnd:kind==='boost'?cfg.boostSnd:cfg.timerSnd);
+function notify(kind,msg){addLog(kind,msg);sound(kind,kind==='lie'?cfg.lieSnd:kind==='rune'?cfg.runeSnd:kind==='hunt'?cfg.huntSnd:kind==='buff'?cfg.buffSnd:kind==='boost'?cfg.boostSnd:cfg.timerSnd);
   try{if('Notification' in window&&Notification.permission==='granted')new Notification('재획 알리미',{body:msg})}catch(e){}}
+
+/* ---------- 거짓말 탐지기 (감지 엔진: M-ALERT 원본, lie 폴더) ----------
+   공유 중인 화면 사본을 보이지 않는 엔진 페이지(lie/stable/app.html)에 넘겨 원본 방식 그대로 감지하고,
+   감지되면 여기서 알림을 울림. 게임에는 아무 입력도 하지 않음. */
+var L={st:'idle',frame:null,ready:false,cnt:0,last:0,hitAt:0,goneAt:0,goneSince:0,type:'',err:'',stat:null,nextPoll:0};
+function lieOff(){return (5-cfg.lieSens)*0.015}   /* 5 = 원본 기준(보정 0), 1칸당 0.015 */
+window.__lieHost={
+  stream:function(){return stream&&stream.active?stream.clone():null},
+  hit:function(i){lieHit(i||{})},
+  off:function(){return lieOff()},
+  msg:function(m){L.err=String(m).slice(0,120)},
+  ready:function(){L.ready=true;updateStatus()}};
+function lieClear(){L.st='idle';L.cnt=0;L.last=0;L.goneSince=0}
+function lieSync(){var want=!!(stream&&cfg.on.lie&&!paused);
+  if(want&&!L.frame){if(location.protocol==='file:'){L.err='file';return}
+    var f=document.createElement('iframe');f.className='liefr';f.title='거짓말 탐지기 감지 엔진';f.setAttribute('aria-hidden','true');f.tabIndex=-1;
+    f.src='lie/stable/app.html';L.frame=f;L.ready=false;L.err='';L.stat=null;document.body.appendChild(f)}
+  else if(!want&&L.frame){try{L.frame.contentWindow.__lieBridge.stop()}catch(e){}L.frame.remove();L.frame=null;L.ready=false;L.stat=null}}
+function lieHit(i){if(!cfg.on.lie||paused||!stream)return;var now=Date.now();
+  L.type=String(i.body||'').replace(/\s*후보를 감지했습니다.*$/,'')||'거짓말 탐지기';L.hitAt=now;L.goneSince=0;
+  if(L.st==='ack')return;   /* 확인을 누른 뒤에는 사라질 때까지 다시 울리지 않음 */
+  if(L.st!=='alert'){L.st='alert';L.cnt=0;L.last=0;lieTick(now)}
+  updateStatus()}
+function lieAck(){if(L.st!=='alert')return;L.st='ack';try{speechSynthesis.cancel()}catch(e){}addLog('sys','거짓말 탐지기 알림 확인');updateStatus()}
+$('lieAck').onclick=lieAck;
+function lieEngineOn(){return !!(L.stat&&/분석 #|검사 중|분석 지연/.test(L.stat.last))}
+function lieTick(now){
+  if(L.frame&&now>=L.nextPoll){L.nextPoll=now+1000;try{L.stat=L.frame.contentWindow.__lieBridge.status()}catch(e){L.stat=null}
+    /* 엔진이 더 이상 거탐을 보지 못하면(창이 사라지면) 반복 알림을 끝냄 */
+    if((L.st==='alert'||L.st==='ack')&&L.stat&&/^없음/.test(L.stat.type)&&now-L.hitAt>3000){
+      if(!L.goneSince)L.goneSince=now;
+      else if(now-L.goneSince>=2000){if(L.st==='alert')try{speechSynthesis.cancel()}catch(e){}L.st='gone';L.goneAt=now;addLog('lie','거짓말 탐지기 사라짐')}}
+    else L.goneSince=0;
+    if(L.st==='gone'&&now-L.goneAt>8000)L.st='idle';
+    if(R)updateStatus()}
+  if(L.st!=='alert'||!cfg.on.lie)return;
+  if(L.cnt<LIM[cfg.lieCnt]&&(L.cnt===0||now-L.last>=cfg.lieInt*1000)){L.cnt++;L.last=now;
+    if(L.cnt===1)notify('lie','거짓말 탐지기 감지 · '+L.type);else sound('lie',cfg.lieSnd)}}
+function lieState(){if(!cfg.on.lie)return['꺼짐','off'];if(L.err==='file')return['웹 주소 필요','warn'];
+  if(!stream)return['대기 중','off'];if(paused)return['일시정지','off'];
+  if(L.st==='alert')return['감지!','alert'];if(L.st==='ack')return['확인함','warn'];if(L.st==='gone')return['사라짐','ok'];
+  if(!lieEngineOn())return['준비 중','warn'];return['감시 중','ok']}
+function renderLie(){var s=lieState(),d=$('lieD');
+  $('lieS').textContent=s[0];$('lieS').className='status'+(s[1]==='alert'?' alert':s[1]==='warn'?' warn':'');
+  d.textContent=s[1]==='off'?'--':L.st==='alert'?'거짓말 탐지기 감지!':L.st==='ack'?'확인함 · 사라지면 다시 감시':L.st==='gone'?'사라짐 · 다시 감시':s[0]==='준비 중'?'엔진 준비 중…':'이상 없음';
+  d.className='lbig'+(s[1]==='off'?' off':s[1]==='alert'?' alert':s[1]==='warn'?' warn':'');
+  $('lieAck').hidden=L.st!=='alert';
+  $('lieM').textContent=L.err==='file'?'이 기능은 웹 주소(https://…)로 열었을 때만 동작합니다':!cfg.on.lie?'꺼져 있음':!stream?'화면 연결 대기 · 영역 지정 없이 화면 전체를 봅니다':
+    (L.st==='alert'||L.st==='ack')?L.type+' · '+when(L.hitAt):L.stat?'최근 검사: '+(L.stat.last||'-'):'감지 엔진 불러오는 중…'}
 
 /* ---------- 타이머 ---------- */
 var T={st:'idle',end:0,remain:0,cnt:0,last:0,byGlobal:false,shown:''};
@@ -714,6 +802,7 @@ function setPaused(p){var now=Date.now();paused=p;
   if(p){if(T.st==='run'){T.remain=Math.max(0,T.end-now);T.st='pause';T.byGlobal=true}
     try{speechSynthesis.cancel()}catch(e){}}
   else{if(T.byGlobal&&T.st==='pause'){T.end=now+T.remain;T.st='run'}T.byGlobal=false;resetState()}
+  if(p)lieClear();lieSync();
   addLog('sys',p?'전체 정지':'다시 시작');updateStatus();renderTimer(true)}
 $('pause').onclick=function(){setPaused(!paused)};
 
@@ -727,9 +816,9 @@ $('start').onclick=async function(){ac();
     stream=await navigator.mediaDevices.getDisplayMedia({video:{displaySurface:'window',frameRate:{ideal:5,max:10},width:{ideal:3840},height:{ideal:2160}},audio:false,
       selfBrowserSurface:'exclude',surfaceSwitching:'exclude',systemAudio:'exclude'});
     v.srcObject=stream;await v.play();stream.getVideoTracks()[0].addEventListener('ended',stop);
-    if(cfg.on.buff)aiInit();$('hint').textContent=cfg.rune&&cfg.hunt?'':'영역 설정에서 회색 점이 있는 항목을 눌러 지정하세요.';sizeOv();resetState();setUI();addLog('sys','화면 공유 시작')
+    if(cfg.on.buff)aiInit();$('hint').textContent=cfg.rune&&cfg.hunt?'':'영역 설정에서 회색 점이 있는 항목을 눌러 지정하세요.';sizeOv();resetState();setUI();addLog('sys','화면 공유 시작');lieSync()
   }catch(e){stream=null;setUI();$('hint').textContent='화면 공유를 시작하지 못했습니다. ('+(e&&e.name||'오류')+')'}};
-function stop(){if(!stream)return;closeZoom();stream.getTracks().forEach(function(t){t.stop()});stream=null;v.srcObject=null;
+function stop(){if(!stream)return;closeZoom();stream.getTracks().forEach(function(t){t.stop()});stream=null;v.srcObject=null;lieSync();lieClear();
   setUI();resetState();addLog('sys','화면 공유 종료')}
 $('stop').onclick=stop;
 $('togglePrev').onclick=function(){var h=$('stage').classList.toggle('hide');$('togglePrev').textContent=h?'미리보기 보이기':'미리보기 숨기기';if(!h){sizeOv();draw()}};
@@ -960,7 +1049,7 @@ function checkHunt(now){var g=grab(cfg.hunt);if(!g)return;showHuntView();var d=g
     notify('hunt','사냥 멈춤 · '+(cfg.huntMode==='exp'?'경험치':'MP 숫자')+' '+H.sec+'초째 변화 없음'+(H.cnt>1?' ('+H.cnt+'번째)':''))}}
 
 function tick(){if(paused)return;var now=Date.now();
-  timerTick(now);renderTimer();
+  timerTick(now);renderTimer();lieTick(now);
   if(!stream||!v.videoWidth)return;var ch=false;
   var on=cfg.on;
   if(on.hunt&&cfg.hunt&&now>=nextHunt){nextHunt=now+1500;checkHunt(now);ch=true}
@@ -1266,13 +1355,14 @@ function renderBoost(st){var d=$('boostD'),left=boostLeft(Date.now()),show=st[1]
   $('boostS').textContent=st[0];$('boostS').className='status'+(st[1]==='alert'?' alert':st[1]==='warn'?' warn':'')}
 
 /* ---------- 기능별 켜기/끄기 ---------- */
-var MODN={timer:'타이머',rune:'룬 알림',hunt:'사냥 멈춤',buff:'버프 알림',boost:'부스터 알림'};
+var MODN={lie:'거짓말 탐지기 알림',timer:'타이머',rune:'룬 알림',hunt:'사냥 멈춤',buff:'버프 알림',boost:'부스터 알림'};
 function setOn(k,v){if(!(k in cfg.on))return;cfg.on[k]=v;
   if(k==='rune')R={cand:0,active:false,miss:0,cnt:0,last:0,info:'',boxes:[]};
   if(k==='hunt')H={ref:null,since:Date.now(),cnt:0,last:0,sec:0,stalled:false,ep:false,chg:[]};
   if(k==='buff'){BS=cfg.buffs.map(function(){return newBS()})}
   if(k==='boost')B=newB();
   if(k==='timer'){T.cnt=0}
+  if(k==='lie'){lieClear();lieSync()}
   addLog('sys',MODN[k]+(v?' 켜짐':' 꺼짐'));updateStatus();renderTimer(true);draw();markDirty()}
 function swUI(doc){Array.prototype.forEach.call(doc.querySelectorAll('.sw[data-k]'),function(b){var on=!!cfg.on[b.dataset.k];b.classList.toggle('on',on);b.setAttribute('aria-checked',on)});
   if(doc===document)Array.prototype.forEach.call(document.querySelectorAll('.card[data-mod]'),function(c){c.classList.toggle('off',!cfg.on[c.dataset.mod])})}
@@ -1476,7 +1566,7 @@ function huntState(){if(!cfg.on.hunt)return['꺼짐','off'];if(!cfg.hunt)return[
   if(H.stalled)return['멈춤 의심 ('+H.sec+'초)','alert'];
   if(H.ep)return['재개 확인 중 ('+H.chg.length+'/'+cfg.huntResume+')','warn'];
   return['사냥 중','ok']}
-function updateStatus(){if(!R)return;$('buffAI').textContent=aiStatusText();var r=runeState(),h=huntState(),bf=buffState(),bo=boostState();renderBoost(bo);swUI(document);
+function updateStatus(){if(!R)return;$('buffAI').textContent=aiStatusText();renderLie();var r=runeState(),h=huntState(),bf=buffState(),bo=boostState();renderBoost(bo);swUI(document);
   $('pickBoost').classList.toggle('done',!!cfg.boost||!!(B&&B.seen));
   $('buffS').textContent=bf[0];$('buffS').className='status'+(bf[1]==='alert'?' alert':bf[1]==='warn'?' warn':'');updateBuffRows();
   $('pickBuff').classList.toggle('done',cfg.buffs.length>0);
@@ -1515,13 +1605,14 @@ var PIPCSS='*{box-sizing:border-box}html,body{margin:0;height:100%}'+
  '.rows li.ok i{background:#3ddc97;border-color:#3ddc97}.rows li.warn i{background:#f5b942;border-color:#f5b942}.rows li.alert i{background:#ff5f5f;border-color:#ff5f5f;animation:blink 1s infinite}'+
  '.rows .sw{width:34px;height:20px;padding:0;min-width:0;border-radius:999px;background:#323c48;position:relative;flex:none}.rows .sw b{position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:#fff;transition:left .15s}.rows .sw.on{background:#3ddc97}.rows .sw.on b{left:17px}.rows li.off span,.rows li.off em{opacity:.45}'+
  '.rows span{font-weight:700;flex:1}.rows em{font-style:normal;color:#8b96a5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60%}.rows li.alert em{color:#ff5f5f;font-weight:700}.rows li.warn em{color:#f5b942}'+
+ '.rows .ack{height:24px;padding:0 10px;border-radius:999px;background:#ff5f5f;color:#fff;font-size:12px}'+
  '.rows li.tmain{flex-direction:column;align-items:stretch;gap:2px;padding:6px 10px 10px}'+
  '.tline{display:flex;align-items:center;gap:8px}#pTimer{flex:1;font-size:34px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1;color:#e8edf3}'+
  '#pTimer.off{color:#5d6875}#pTimer.alert{color:#ff5f5f;animation:blink 1s infinite}'+
  '#pSub{color:#8b96a5;font-size:12px}'+
  '#pRestart{background:#4cc2ff;color:#06131c;padding:0 14px}#pRestart:hover{filter:brightness(1.08);background:#4cc2ff}'+
  '.plog li{display:flex;gap:8px;padding:6px 10px;font-size:12px;border-top:1px solid #262e38;color:#c9d1db}.plog li:first-child{border-top:0}'+
- '.plog time{color:#5d6875;flex:none}.plog .k{font-weight:700;flex:none}.plog .rune .k{color:#c084fc}.plog .hunt .k{color:#ff5f5f}.plog .timer .k{color:#6cb6ff}.plog .buff .k{color:#f5b942}.plog .boost .k{color:#ff9a3c}.plog .sys,.plog .empty{color:#5d6875}'+
+ '.plog time{color:#5d6875;flex:none}.plog .k{font-weight:700;flex:none}.plog .rune .k{color:#c084fc}.plog .hunt .k{color:#ff5f5f}.plog .timer .k{color:#6cb6ff}.plog .buff .k{color:#f5b942}.plog .boost .k{color:#ff9a3c}.plog .lie .k{color:#ff7ab6}.plog .sys,.plog .empty{color:#5d6875}'+
  '.plog .m{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}'+
  '@keyframes blink{50%{opacity:.35}}';
 var SWP=function(k){return'<button class="sw" data-k="'+k+'" title="켜기/끄기"><b></b></button>'};
@@ -1530,6 +1621,7 @@ var PIPHTML='<header><span>🍁</span><b id="pTitle">재획 알리미</b><span c
  '<button id="pPin" title="고정">'+ICON_PIN+'</button><button id="pClose" title="PIP 닫기">✕</button></header>'+
  '<div id="pVolBox" hidden><input type="range" id="pVolR" min="0" max="100" aria-label="볼륨"></div>'+
  '<ul class="rows">'+
+ '<li id="pLie"><i></i><span>거짓말 탐지기</span><em></em><button id="pLieAck" class="ack" hidden>확인</button>'+SWP('lie')+'</li>'+
  '<li id="pBuff"><i></i><span>버프</span><em></em>'+SWP('buff')+'</li>'+
  '<li id="pRune"><i></i><span>룬</span><em></em>'+SWP('rune')+'</li>'+
  '<li id="pHunt"><i></i><span>사냥 멈춤</span><em></em>'+SWP('hunt')+'</li>'+
@@ -1541,13 +1633,14 @@ var PIPHTML='<header><span>🍁</span><b id="pTitle">재획 알리미</b><span c
 $('pipBtn').onclick=async function(){
   if(pip){pip.close();return}
   if(!('documentPictureInPicture' in window)){$('hint').textContent='이 브라우저는 PIP 창을 지원하지 않습니다. Chrome 또는 Edge 최신 버전에서 열어주세요.';return}
-  var w;try{w=await documentPictureInPicture.requestWindow({width:340,height:560})}
+  var w;try{w=await documentPictureInPicture.requestWindow({width:340,height:600})}
   catch(e){$('hint').textContent='PIP 창을 열지 못했습니다. ('+(e&&e.name||'오류')+')';return}
   pip=w;var d=w.document;d.title='재획 알리미';
   var st=d.createElement('style');st.textContent=PIPCSS;d.head.appendChild(st);
   d.body.innerHTML=PIPHTML;
   d.getElementById('pPause').onclick=function(){ac();setPaused(!paused)};
   d.getElementById('pRestart').onclick=timerRestart;
+  d.getElementById('pLieAck').onclick=lieAck;
   d.getElementById('pToggle').onclick=timerToggle;
   d.getElementById('pClose').onclick=function(){if(!pinned)w.close()};
   d.getElementById('pPin').onclick=function(){pinned=!pinned;pinUI()};pinUI();
@@ -1565,6 +1658,7 @@ function renderPip(r,h,bf,bo){if(!pip)return;var d=pip.document,g=function(i){re
   g('pVolV').textContent=vol+'%';g('pVolR').value=vol;
   pipRow(g('pRune'),r);pipRow(g('pHunt'),h);if(bf)pipRow(g('pBuff'),bf);if(bo)pipRow(g('pBoost'),bo);
   pipRow(g('pTimerRow'),timerBadge());
+  var ls=lieState();pipRow(g('pLie'),ls);g('pLieAck').hidden=L.st!=='alert';
   swUI(d)}
 
 /* ---------- 시작 ---------- */
