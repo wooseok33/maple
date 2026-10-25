@@ -363,15 +363,19 @@ PIP 창의 ‘재시작’으로 바로 다시 시작할 수 있습니다.
   </section>
   <!-- 버프 -->
   <section class="card" data-mod="buff">
-    <div class="mh"><h3><span class="ico">✦</span>버프 알림<span class="info l" tabindex="0" data-tip="남은 시간이 분 단위·분:초로 표시되는 동안은 유지로 보고,\n초 단위(예: 9)로 바뀌면 2초마다 추적하다 아이콘이 사라지면 알려줍니다.\n영역 설정의 ‘버프 아이콘’을 누르고 아이콘 하나에 딱 맞게 드래그하세요. (최대 4개)\n‘버프 구간’을 지정하면 아이콘이 다른 줄로 옮겨 가도 구간 안에서 찾아냅니다.">i</span></h3><div class="rt"><span class="status" id="buffS">미설정</span><button class="sw" data-k="buff" role="switch" title="켜기/끄기"><b></b></button></div></div>
+    <div class="mh"><h3><span class="ico">✦</span>버프 알림<span class="info l" tabindex="0" data-tip="AI가 화면 오른쪽 위 버프창을 자동으로 찾고, 아이콘 위 남은 시간을 직접 읽어\n설정한 시간 전에 미리 알리고, 끝나면 알려줍니다. (2분 이하부터 정확한 초 단위)\n‘버프 아이콘 +’로 알림 받을 아이콘을 드래그하면 등록됩니다. (최대 4개)\nAI를 쓸 수 없는 환경에서는 기존 방식(아이콘 비교)으로 동작합니다.">i</span></h3><div class="rt"><span class="status" id="buffS">미설정</span><button class="sw" data-k="buff" role="switch" title="켜기/끄기"><b></b></button></div></div>
+    <div class="meta" id="buffAI" style="margin-bottom:8px"></div>
     <ul class="blist" id="buffList"></ul>
     <details class="set"><summary>설정</summary>
       <div class="sgrid">
-        <div class="fr"><span>종료 판정 <span class="info l" tabindex="0" data-tip="등록한 아이콘과 무늬가 이만큼 이상 달라지면 종료로 봅니다.\n회색 막, 남은 분 숫자, 10분 이하의 노란 초 단위 숫자는 자동으로 무시합니다.\n권장 30% (실측: 같은 버프 88% 이상 / 사라진 경우 35% 이하).\n오탐이 있으면 올리고, 종료를 놓치면 내리세요.">i</span> <b><span id="buffChangeV"></span>% 변화</b></span><input type="range" id="buffChange" min="10" max="90"></div>
+        <div class="fl"><span>미리 알림 <span class="info l" tabindex="0" data-tip="남은 시간이 이 값 이하가 되면 알립니다. (AI 사용 시)\n버프 숫자는 2분(120초) 이하부터 정확히 읽습니다. 0이면 끔.">i</span></span><span class="row"><input type="number" id="buffWarn" min="0" max="120"><span class="u">초 남았을 때</span></span></div>
+        <label class="chk"><input type="checkbox" id="buffEndOn">버프가 끝나면 알림</label>
+        <label class="chk"><input type="checkbox" id="buffAuto">자주 쓰는 버프 자동 인식<span class="info l" tabindex="0" data-tip="경험치 쿠폰 · 물약 · 유니온의 부 · 유니온의 행운을\n등록하지 않아도 자동으로 찾아 알려줍니다. (AI 사용 시)\n켜면 인식 모델(약 17MB)을 한 번 더 받습니다.">i</span></label>
+        <div class="fr"><span>아이콘 일치 기준 <span class="info l" tabindex="0" data-tip="등록한 아이콘과 무늬가 이만큼 이상 달라지면 다른 아이콘(또는 사라짐)으로 봅니다.\n회색 막, 남은 분 숫자, 10분 이하의 노란 초 단위 숫자는 자동으로 무시합니다.\n권장 30% (실측: 같은 버프 88% 이상 / 사라진 경우 35% 이하).\n오탐이 있으면 올리고, 종료를 놓치면 내리세요.">i</span> <b><span id="buffChangeV"></span>% 변화</b></span><input type="range" id="buffChange" min="10" max="90"></div>
         <label class="chk"><input type="checkbox" id="buffEarly">초 단위 전에 사라져도 알림<span class="info l" tabindex="0" data-tip="기본은 남은 시간이 초 단위(예: 9)로 바뀐 버프만 종료를 감시합니다.\n켜면 분 단위·분:초 표시 중에 갑자기 사라진 경우(사망, 해제 등)도 알립니다.">i</span></label>
         <div class="fl"><span>유지 시간 <span class="info l" tabindex="0" data-tip="초 단위 단계에서 2초마다 확인하며,\n이 시간 동안 계속 사라져 있어야 종료로 판단합니다.">i</span></span><span class="row"><input type="number" id="buffHold" min="1" max="10"><span class="u">초</span></span></div>
         <div class="fl"><span>알림음</span><span class="row"><select id="buffSnd"></select><button class="icon" id="buffTest" title="미리 듣기">▶</button></span></div>
-        <div class="fr"><span>알림 횟수 <b id="buffCntV"></b></span><input type="range" id="buffCnt" min="0" max="3"></div>
+        <div class="fr"><span>미리 알림 횟수 <b id="buffCntV"></b></span><input type="range" id="buffCnt" min="0" max="3"></div>
         <div class="fl"><span>반복 간격</span><span class="row"><input type="number" id="buffInt" min="1" max="60"><span class="u">초</span></span></div>
       </div>
     </details>
@@ -398,7 +402,7 @@ PIP 창의 ‘재시작’으로 바로 다시 시작할 수 있습니다.
   <div class="mh" style="margin-bottom:8px"><h3>알림 기록</h3><button class="ghost sm" id="logClear">지우기</button></div>
   <ul class="log" id="log"></ul>
 </section>
-<p class="foot">공유 화면은 이 브라우저 안에서만 분석되며 어디에도 전송되지 않습니다.</p>
+<p class="foot">공유 화면은 이 브라우저 안에서만 분석되며 어디에도 전송되지 않습니다.<br>버프 인식 AI 모델 제공: maple-timer.com · AI 실행 엔진: ONNX Runtime Web (MIT License)</p>
 </main>
 
 <div id="zoomer" hidden>
@@ -456,15 +460,15 @@ var v=$('v'),ov=$('ov'),octx=ov.getContext('2d');
 var work=document.createElement('canvas'),wctx=work.getContext('2d',{willReadFrequently:true});
 
 /* ---------- 설정 ---------- */
-var DEF={on:{timer:true,rune:true,hunt:true,buff:true,boost:true},boost:null,boostWarn:10,boostEnd:true,boostSnd:'siren',boostCnt:0,boostInt:5,
-  rune:null,hunt:null,buffs:[],buffArea:null,buffEarly:false,buffChange:30,buffHold:2,buffCnt:1,buffInt:5,buffSnd:'beep',runeMode:'sample',runeTpl:null,runeColor:'#dd66ff',runeTol:70,runeMinPx:3,runeSim:70,
+var DEF={buffWarn:10,buffEndOn:true,buffAuto:false,on:{timer:true,rune:true,hunt:true,buff:true,boost:true},boost:null,boostWarn:10,boostEnd:true,boostSnd:'siren',boostCnt:0,boostInt:5,
+  rune:null,hunt:null,buffs:[],buffArea:null,buffEarly:false,buffChange:30,buffHold:2,buffCnt:0,buffInt:5,buffSnd:'beep',runeMode:'sample',runeTpl:null,runeColor:'#dd66ff',runeTol:70,runeMinPx:3,runeSim:70,
   runeMin:2,runeMax:40,runeShape:70,runeHold:1,runeCnt:0,runeInt:5,runeSnd:'quiet',
   huntMode:'exp',huntSec:15,huntBr:170,huntD:5,huntCnt:1,huntInt:5,huntResume:2,huntSnd:'quiet',
   timerMin:30,timerSec:0,timerCnt:1,timerInt:5,timerSnd:'chime',timerAuto:false};
-var RANGE={boostWarn:[0,99],boostCnt:[0,3],boostInt:[1,60],buffChange:[10,90],buffHold:[1,10],buffCnt:[0,3],buffInt:[1,60],runeTol:[20,150],runeMinPx:[1,100],runeSim:[50,98],runeMin:[1,30],runeMax:[6,80],runeShape:[50,95],runeHold:[0.5,5],runeCnt:[0,3],runeInt:[1,60],
+var RANGE={buffWarn:[0,120],boostWarn:[0,99],boostCnt:[0,3],boostInt:[1,60],buffChange:[10,90],buffHold:[1,10],buffCnt:[0,3],buffInt:[1,60],runeTol:[20,150],runeMinPx:[1,100],runeSim:[50,98],runeMin:[1,30],runeMax:[6,80],runeShape:[50,95],runeHold:[0.5,5],runeCnt:[0,3],runeInt:[1,60],
   huntSec:[1,600],huntBr:[120,255],huntD:[1,40],huntCnt:[0,3],huntInt:[1,60],huntResume:[1,5],
   timerMin:[0,600],timerSec:[0,59],timerCnt:[0,3],timerInt:[1,60]};
-var NUM=Object.keys(RANGE),STR=['runeSnd','huntSnd','timerSnd','buffSnd','boostSnd'],BOOL=['timerAuto','buffEarly','boostEnd'];
+var NUM=Object.keys(RANGE),STR=['runeSnd','huntSnd','timerSnd','buffSnd','boostSnd'],BOOL=['timerAuto','buffEarly','boostEnd','buffEndOn','buffAuto'];
 var SOUNDS={quiet:'조용한 띵동',chime:'차임벨',beep:'경보 삐삐',siren:'사이렌',clock:'자명종',coin:'코인 띠링',bell:'종소리',
   marimba:'마림바',whistle:'호루라기',rise:'상승음',horn:'경적',pulse:'펄스 경보',loud:'큰 음성'};
 var LIM=[1,3,5,Infinity],LBL=['1번만','3번까지','5번까지','사라질 때까지 계속'],TLBL=['1번만','3번까지','5번까지','재시작·초기화할 때까지 계속'];
@@ -486,7 +490,7 @@ function clean(p){var o=Object.assign({},DEF);if(!p||typeof p!=='object')return 
   o.buffArea=okRect(p.buffArea);o.boost=okRect(p.boost);
   o.on=Object.assign({},DEF.on);if(p.on&&typeof p.on==='object')Object.keys(DEF.on).forEach(function(k){if(typeof p.on[k]==='boolean')o.on[k]=p.on[k]});
   o.buffs=Array.isArray(p.buffs)?p.buffs.map(function(b){if(!b||typeof b!=='object')return null;var t=okTpl(b.tpl,80),r=okRect(b.pos);
-    return t&&r?{name:String(b.name||'버프').slice(0,20),tpl:t,pos:r}:null}).filter(Boolean).slice(0,4):[];
+    if(t&&b.tpl&&b.tpl.ai===true)t.ai=true;return t&&r?{name:String(b.name||'버프').slice(0,20),tpl:t,pos:r}:null}).filter(Boolean).slice(0,4):[];
   o.huntMode=p.huntMode==='exp'||p.huntMode==='box'?p.huntMode:(p.hunt?'box':'exp');
   o.rune=okRect(p.rune);o.hunt=okRect(p.hunt);return o}
 var MODES=['sample','color','diamond'];
@@ -605,6 +609,7 @@ function sound(kind,mode){
   if(!ac())return;try{(PLAY[mode]||PLAY.quiet)(actx.currentTime+0.03)}catch(e){}}
 $('runeTest').onclick=function(){sound('rune',$('runeSnd').value)};
 $('huntTest').onclick=function(){sound('hunt',$('huntSnd').value)};
+$('buffAuto').addEventListener('change',function(){if(cfg.buffAuto){if(AI.st==='ready')aiLoadGroups();else aiInit()}BSA={};renderBuffs()});
 $('boostTest').onclick=function(){sound('boost',$('boostSnd').value)};
 $('buffTest').onclick=function(){sound('buff',$('buffSnd').value)};
 $('timerTest').onclick=function(){sound('timer',$('timerSnd').value)};
@@ -686,7 +691,7 @@ $('start').onclick=async function(){ac();
     stream=await navigator.mediaDevices.getDisplayMedia({video:{displaySurface:'window',frameRate:{ideal:5,max:10},width:{ideal:3840},height:{ideal:2160}},audio:false,
       selfBrowserSurface:'exclude',surfaceSwitching:'exclude',systemAudio:'exclude'});
     v.srcObject=stream;await v.play();stream.getVideoTracks()[0].addEventListener('ended',stop);
-    $('hint').textContent=cfg.rune&&cfg.hunt?'':'영역 설정에서 회색 점이 있는 항목을 눌러 지정하세요.';sizeOv();resetState();setUI();addLog('sys','화면 공유 시작')
+    if(cfg.on.buff)aiInit();$('hint').textContent=cfg.rune&&cfg.hunt?'':'영역 설정에서 회색 점이 있는 항목을 눌러 지정하세요.';sizeOv();resetState();setUI();addLog('sys','화면 공유 시작')
   }catch(e){stream=null;setUI();$('hint').textContent='화면 공유를 시작하지 못했습니다. ('+(e&&e.name||'오류')+')'}};
 function stop(){if(!stream)return;closeZoom();stream.getTracks().forEach(function(t){t.stop()});stream=null;v.srcObject=null;
   setUI();resetState();addLog('sys','화면 공유 종료')}
@@ -763,7 +768,7 @@ zc.onpointermove=function(e){var p=zPt(e);Z.hover=zVid(p);
 zc.onpointerup=function(){if(Z.pan){Z.pan=null;return}if(!Z.drag)return;Z.drag=null;var r=Z.sel,kind=Z.kind;
   if(!r||r.w*v.videoWidth<2||r.h*v.videoHeight<2){Z.sel=null;return}
   closeZoom();
-  if(kind==='buff')registerBuff(r);
+  if(kind==='buff'){if(AI.st==='ready')aiRegister(r);else registerBuff(r)}
   else if(kind==='tpl')registerTpl(r);
   else{cfg[kind]=r;resetState();$('hint').textContent='영역을 지정했습니다. (자동 저장됨)'}
   draw()};
@@ -801,7 +806,9 @@ function draw(){octx.clearRect(0,0,ov.width,ov.height);box(cfg.rune,'#a855f7','�
   if(stream&&cfg.boost){octx.setLineDash([6,4]);box(cfg.boost,'#ff9a3c','부스터');octx.setLineDash([])}
   if(stream&&B&&B.box)box(B.box,'#ff9a3c',cfg.boost?'':'부스터');
   if(stream&&cfg.buffArea){octx.setLineDash([6,4]);box(cfg.buffArea,'#f5b942','버프 구간');octx.setLineDash([])}
-  if(stream)cfg.buffs.forEach(function(b,i){var st=BS[i];if(st&&st.at)box(st.at,'#f5b942',b.name)});
+  if(stream&&AI.st==='ready'&&cfg.on.buff&&AI.boxes){octx.globalAlpha=.35;AI.boxes.forEach(function(b){box(b,'#f5b942','')});octx.globalAlpha=1}
+  if(stream){cfg.buffs.forEach(function(b,i){var st=BS[i];if(st&&st.at)box(st.at,'#f5b942',b.name)});
+    GROUPS.forEach(function(G){var st=BSA[G.g];if(cfg.buffAuto&&st&&st.at)box(st.at,'#3ddc97',G.name)})}
   if(R&&stream&&cfg.rune)R.boxes.forEach(function(b){var p=3/ov.width;box({x:b.x-p,y:b.y-p,w:b.w+2*p,h:b.h+2*p},'#facc15','')});
   if(drag){box({x:Math.min(drag.a.x,drag.b.x),y:Math.min(drag.a.y,drag.b.y),w:Math.abs(drag.a.x-drag.b.x),h:Math.abs(drag.a.y-drag.b.y)},'#facc15','')}}
 
@@ -811,7 +818,7 @@ function resetState(){var now=Date.now();
   R={cand:0,active:false,miss:0,cnt:0,last:0,info:'',boxes:[]};
   H={ref:null,since:now,cnt:0,last:0,sec:0,stalled:false,ep:false,chg:[]};
   BS=cfg.buffs.map(function(){return newBS()});
-  B=newB();nextHunt=0;nextRune=0;nextBuff=0;nextBoost=0;renderBuffs();updateStatus()}
+  BSA={};B=newB();nextHunt=0;nextRune=0;nextBuff=0;nextBoost=0;renderBuffs();updateStatus()}
 function grab(r){var W=v.videoWidth,Hh=v.videoHeight;if(!W)return null;
   var w=Math.max(1,Math.floor(r.w*W)),h=Math.max(1,Math.floor(r.h*Hh));
   if(work.width!==w)work.width=w;if(work.height!==h)work.height=h;
@@ -923,7 +930,7 @@ function tick(){if(paused)return;var now=Date.now();
   var on=cfg.on;
   if(on.hunt&&cfg.hunt&&now>=nextHunt){nextHunt=now+1500;checkHunt(now);ch=true}
   if(on.rune&&cfg.rune&&now>=nextRune){checkRune(now);ch=true}
-  if(on.buff&&cfg.buffs.length&&now>=nextBuff){nextBuff=now+2000;checkBuffs(now);ch=true}
+  if(on.buff&&(cfg.buffs.length||cfg.buffAuto)&&now>=nextBuff){nextBuff=now+2000;if(AI.st==='ready')aiBuffCycle(now);checkBuffs(now);ch=true}
   if(on.boost&&now>=nextBoost){nextBoost=now+500;checkBoost(now);ch=true}
   if(ch)updateStatus()}
 
@@ -1034,21 +1041,34 @@ function timePhase(d,w,px,py,P){var tw=P.w,th=P.h,e=P.e,cnt=0,xmin=1e9,xmax=-1,y
    (설정의 '초 단위 전에 사라져도 알림'을 켜면 ①·② 단계에서 갑자기 사라진 경우도 알림) */
 function checkBuffs(now){var thr=1-cfg.buffChange/100,A=cfg.buffArea,AC=null;
   if(A){var W=v.videoWidth,Hh=v.videoHeight;AC=frameCtx(Math.floor(A.x*W),Math.floor(A.y*Hh),Math.ceil((A.x+A.w)*W),Math.ceil((A.y+A.h)*Hh))}
-  cfg.buffs.forEach(function(b,i){var st=BS[i]||(BS[i]=newBS()),res=AC?searchBuff(b,AC,true):buffSim(b);if(!res)return;var s=res.s;st.sim=s;st.at=s>=thr?res.at:null;
+  cfg.buffs.forEach(function(b,i){if(b.tpl.ai&&AI.st==='ready')return;var st=BS[i]||(BS[i]=newBS()),res=AC?searchBuff(b,AC,true):buffSim(b);if(!res)return;var s=res.s;st.sim=s;st.at=s>=thr?res.at:null;
     if(s>=thr){st.seen=true;st.lost=false;st.endSince=0;if(res.phase)st.phase=res.phase;if(st.ended){st.ended=false;st.cnt=0}}
     else if(st.seen&&st.phase!=='sec'&&!cfg.buffEarly){st.lost=true;st.endSince=0}
     else if(st.seen){if(!st.endSince)st.endSince=now;
       if(now-st.endSince>=cfg.buffHold*1000){st.ended=true;
         if(st.cnt<LIM[cfg.buffCnt]&&(st.cnt===0||now-st.last>=cfg.buffInt*1000)){st.cnt++;st.last=now;
           notify('buff',b.name+' 종료 · 일치도 '+Math.round(s*100)+'%'+(st.cnt>1?' ('+st.cnt+'번째)':''))}}}})}
-function buffState(){if(!cfg.on.buff)return['꺼짐','off'];var n=cfg.buffs.length;if(!n)return['미설정','off'];if(!stream)return['대기 중','off'];if(paused)return['일시정지','off'];
-  var end=[],wait=0,soon=[];cfg.buffs.forEach(function(b,i){var st=BS[i];if(!st)return;if(st.ended)end.push(b.name);else if(!st.seen)wait++;else if(st.phase==='sec')soon.push(b.name)});
+function fmtLeft(x){x=Math.max(0,Math.ceil(x));return x>=60?Math.floor(x/60)+':'+('0'+x%60).slice(-2):x+'초'}
+/* 추적 중인 항목: 등록한 버프 + (켜져 있으면) 4종 자동 인식 */
+function buffEntries(){var L=cfg.buffs.map(function(b,i){return{name:b.name,st:BS[i],ai:!!b.tpl.ai}});
+  if(cfg.buffAuto&&AI.grpSt==='ready')GROUPS.forEach(function(G){L.push({name:G.name,st:BSA[G.g],ai:true,auto:true})});return L}
+function buffState(){if(!cfg.on.buff)return['꺼짐','off'];var E=buffEntries(),n=E.length;
+  if(!n)return[cfg.buffAuto&&AI.grpSt==='loading'?'자동 인식 준비 중':'미설정','off'];if(!stream)return['대기 중','off'];if(paused)return['일시정지','off'];
+  var now=Date.now(),end=[],soon=[],wait=0,seen=0;
+  E.forEach(function(e){var st=e.st;if(!st){wait++;return}var left=buffLeft(st,now);
+    if(st.ended&&now-(st.endAt||now)<20000)end.push(e.name);else if(!st.seen)wait++;
+    else{seen++;if(left!==null&&cfg.buffWarn>0&&left<=cfg.buffWarn)soon.push(e.name+' '+fmtLeft(left));else if(!e.ai&&st.phase==='sec')soon.push(e.name)}});
   if(end.length)return[end.join(', ')+' 종료','alert'];
   if(soon.length)return['곧 종료: '+soon.join(', '),'warn'];
-  if(wait)return['아이콘 확인 중 ('+(n-wait)+'/'+n+')','warn'];
-  return['유지 중 '+n+'개','ok']}
-function renderBuffs(){var ul=$('buffList');ul.textContent='';
-  if(!cfg.buffs.length){var e=document.createElement('li');e.className='empty';e.textContent='화면 공유 후 ‘버프 구간’ → ‘버프 아이콘 +’ 순서로 등록하세요';ul.appendChild(e);return}
+  if(!seen)return['버프 찾는 중','warn'];
+  return['유지 중 '+seen+'개'+(wait?' · 안 보임 '+wait:''),'ok']}
+function aiStatusText(){if(!cfg.on.buff)return'';
+  var t=AI.st==='ready'?'🧠 AI 인식 사용 중'+(AI.found!=null?' · 버프창 칸 '+(AI.boxes||[]).length+'개 인식'+(AI.ms?' · '+AI.ms+'ms':''):'')
+    :AI.st==='loading'?'🧠 AI 모델 불러오는 중… (처음 한 번 약 25MB)':AI.st==='fail'?'⚠ AI를 쓸 수 없어 기존 방식으로 동작 (GitHub 주소로 열어야 AI 사용 가능)':'🧠 화면 공유를 시작하면 AI 인식을 준비합니다';
+  if(cfg.buffAuto)t+=AI.grpSt==='loading'?' · 자동 인식 준비 중':AI.grpSt==='ready'?' · 4종 자동 인식 켜짐':AI.grpSt==='fail'?' · 자동 인식 모델을 불러오지 못함':'';
+  return t}
+function renderBuffs(){var ul=$('buffList');ul.textContent='';var E=buffEntries();
+  if(!E.length){var e=document.createElement('li');e.className='empty';e.textContent=AI.st==='ready'?'‘버프 아이콘 +’로 알림 받을 아이콘을 드래그하세요':'화면 공유 후 ‘버프 아이콘 +’로 등록하세요';ul.appendChild(e);return}
   cfg.buffs.forEach(function(b,i){var li=document.createElement('li'),c=document.createElement('canvas'),T=b.tpl;c.width=T.w;c.height=T.h;
     var cx=c.getContext('2d'),im=cx.createImageData(T.w,T.h);for(var k=0,j=0;k<T.w*T.h;k++,j+=3){im.data[k*4]=T.px[j];im.data[k*4+1]=T.px[j+1];im.data[k*4+2]=T.px[j+2];im.data[k*4+3]=255}
     cx.putImageData(im,0,0);
@@ -1058,12 +1078,21 @@ function renderBuffs(){var ul=$('buffList');ul.textContent='';
     var x=document.createElement('button');x.className='x';x.textContent='✕';x.title='삭제';
     x.onclick=function(){cfg.buffs.splice(i,1);BS.splice(i,1);renderBuffs();updateStatus();draw()};
     li.appendChild(c);li.appendChild(info);li.appendChild(x);ul.appendChild(li)});
+  if(cfg.buffAuto&&AI.grpSt==='ready')GROUPS.forEach(function(G){var li=document.createElement('li'),c=document.createElement('canvas');c.width=32;c.height=32;c.dataset.g=G.g;
+    var info=document.createElement('div');info.className='bi';var nm=document.createElement('b');nm.textContent=G.name+' (자동)';nm.style.cssText='font-size:13px;padding-left:7px';
+    var stt=document.createElement('span');stt.className='bs';info.appendChild(nm);info.appendChild(stt);li.appendChild(c);li.appendChild(info);ul.appendChild(li)});
   updateBuffRows()}
-function updateBuffRows(){var lis=$('buffList').children;cfg.buffs.forEach(function(b,i){var li=lis[i],st=BS[i];if(!li||!st)return;
-  var pct=st.sim===null?'':' · '+Math.round(st.sim*100)+'%',PH={min:'분 단위',mmss:'분:초',sec:'초 단위 · 2초마다 추적'};
-  var t=!stream?'화면 연결 대기':paused?'일시정지':st.ended?'종료됨 · 다시 켜면 자동 복구':st.sim===null?'확인 중':!st.seen?'아이콘을 찾는 중'+pct
-    :st.lost?'아이콘 안 보임 (초 단위 전이라 알림 없음)'+pct:st.phase==='sec'?'곧 종료 · '+PH.sec+pct:'유지 중 · '+(PH[st.phase]||'')+pct;
-  li.className=st.ended&&stream&&!paused?'end':'';li.querySelector('.bs').textContent=t})}
+function updateBuffRows(){var lis=$('buffList').children,now=Date.now(),E=buffEntries();$('buffAI').textContent=aiStatusText();
+  E.forEach(function(e,i){var li=lis[i],st=e.st;if(!li||li.classList.contains('empty'))return;
+    if(e.auto&&st&&st.icon){var c=li.querySelector('canvas');if(c&&!c.dataset.done){var cx=c.getContext('2d'),im=cx.createImageData(32,32);im.data.set(st.icon.data);cx.putImageData(im,0,0);c.dataset.done=1}}
+    var t;if(!stream)t='화면 연결 대기';else if(paused)t='일시정지';else if(!st)t='확인 중';
+    else{var left=buffLeft(st,now),pct=!e.auto&&st.sim!=null?' · 일치 '+Math.round(st.sim*100)+'%':'';
+      if(st.ended)t='종료됨 · 다시 켜면 자동 복구';
+      else if(!st.seen)t=(e.auto?'버프창에서 찾는 중':'아이콘을 찾는 중')+pct;
+      else if(!st.at)t='안 보임'+(left!==null?' · 예상 '+fmtLeft(left):'')+(st.lost?' (알림 없음)':'')+pct;
+      else if(e.ai){t=left!==null?fmtLeft(left)+' 남음'+(cfg.buffWarn>0&&left<=cfg.buffWarn?' ⚠':''):st.phase==='long'?'남은 '+st.read+' (2분 넘음)':'유지 중 (분 단위 표시)';t+=pct}
+      else{var PH={min:'분 단위',mmss:'분:초',sec:'초 단위 · 2초마다 추적'};t=(st.phase==='sec'?'곧 종료 · ':'유지 중 · ')+(PH[st.phase]||'')+pct}}
+    li.className=st&&st.ended&&stream&&!paused?'end':'';li.querySelector('.bs').textContent=t})}
 
 /* ---------- 부스터 ---------- */
 /* 부스터 남은 시간 읽기 — 7-세그먼트 숫자 해석 (크기와 무관)
@@ -1216,6 +1245,158 @@ setInterval(function(){saveWork(false)},2000);
 window.addEventListener('pagehide',function(){saveWork(true)});
 document.addEventListener('visibilitychange',function(){if(document.hidden)saveWork(true)});
 
+/* ---------- 버프 AI (모델 제공: maple-timer.com / 실행 엔진: ONNX Runtime Web, MIT) ----------
+   ① 화면 오른쪽 위 1/4을 960×544로 맞춰(비율 유지, 빈 곳 회색) 버프 아이콘 칸을 모두 찾음
+   ② 화면 오른쪽 끝에 붙은 맨 위 줄을 기준으로, 아래로 정렬된 줄들만 버프창으로 인정
+   ③ 각 칸을 32×32로 잘라 남은 시간 숫자(분:초 / 초)를 읽음 — 2분(120초) 이하만 알림에 사용
+   ④ 등록한 아이콘과 비교하거나(아무 버프나), 4종 판별 모델로 자동 인식(선택) */
+var AI={st:'idle',ort:null,det:null,ocr:null,grp:null,grpSt:'idle',busy:false,err:'',boxes:[],ms:0};
+var AIP={det:'models/buff-detector-yolov8n-q1-544x960-fp32/best.onnx',ocr:'models/center-ocr-v8/center-ocr-v8.onnx'};
+var GROUPS=[{g:'expCoupon',name:'경험치 쿠폰',dir:'buff-group-expcoupon-deep-v1',max:1},{g:'potion',name:'물약',dir:'buff-group-potion-deep-v1',max:2},
+  {g:'unionWealth',name:'유니온의 부',dir:'buff-group-unionwealth-deep-v1',max:1},{g:'unionLuck',name:'유니온의 행운',dir:'buff-group-unionluck-deep-v1',max:1}];
+function aiInit(){if(AI.st!=='idle')return;AI.st='loading';updateStatus();
+  (async function(){
+    async function load(proxy){var ort=await import('./vendor/ort.wasm.bundle.min.js');
+      ort.env.wasm.numThreads=1;ort.env.wasm.proxy=proxy;ort.env.wasm.wasmPaths={wasm:new URL('vendor/ort-wasm-simd-threaded.wasm',location.href).href};
+      AI.ort=ort;AI.det=await ort.InferenceSession.create(AIP.det,{executionProviders:['wasm']});
+      AI.ocr=await ort.InferenceSession.create(AIP.ocr,{executionProviders:['wasm']})}
+    try{await load(false)
+      AI.st='ready';addLog('sys','버프 AI 준비 완료');if(cfg.buffAuto)aiLoadGroups()}
+    catch(e){AI.st='fail';AI.err=String(e&&e.message||e).slice(0,140)}
+    updateStatus();renderBuffs()})()}
+/* 4종 자동 인식 모델: 켤 때만 받음 (약 17MB) */
+async function aiLoadGroups(){if(AI.grpSt==='loading'||AI.grpSt==='ready'||AI.st!=='ready')return;AI.grpSt='loading';updateStatus();
+  try{AI.grp=await Promise.all(GROUPS.map(async function(G){var base='models/'+G.dir+'/';
+      var pol=await (await fetch(base+'policy.json')).json(),gate=await (await fetch(base+pol.files.positiveGate)).json();
+      var ses=await AI.ort.InferenceSession.create(base+pol.files.onnx,{executionProviders:['wasm'],externalData:[{path:pol.files.onnxData,data:base+pol.files.onnxData}]});
+      var dim=gate.embeddingDim,flat=new Float32Array(gate.prototypes.length*dim);gate.prototypes.forEach(function(p,i){flat.set(p,i*dim)});
+      return Object.assign({},G,{ses:ses,thr:pol.thresholds[G.g],gthr:gate.threshold,proto:flat,np:gate.prototypes.length,dim:dim})}));
+    AI.grpSt='ready';addLog('sys','버프 4종 자동 인식 준비 완료')}
+  catch(e){AI.grpSt='fail';AI.err=String(e&&e.message||e).slice(0,140)}
+  updateStatus();renderBuffs()}
+
+/* ① 탐지 */
+var aiCv=document.createElement('canvas');aiCv.width=960;aiCv.height=544;var aiCx=aiCv.getContext('2d',{willReadFrequently:true});
+var qCv=document.createElement('canvas'),qCx=qCv.getContext('2d',{willReadFrequently:true});
+async function aiDetect(){var W=v.videoWidth,H=v.videoHeight,cx0=Math.floor(W/2),cw=W-cx0,ch=Math.floor(H/2);
+  var s=Math.min(960/cw,544/ch),nw=Math.round(cw*s),nh=Math.round(ch*s),px=Math.max(0,Math.round((960-nw)/2-.1)),py=Math.max(0,Math.round((544-nh)/2-.1));
+  aiCx.fillStyle='rgb(114,114,114)';aiCx.fillRect(0,0,960,544);aiCx.drawImage(v,cx0,0,cw,ch,px,py,nw,nh);
+  var d=aiCx.getImageData(0,0,960,544).data,N=960*544,inp=new Float32Array(3*N);
+  for(var i=0,k=0;i<N;i++,k+=4){inp[i]=d[k]/255;inp[N+i]=d[k+1]/255;inp[2*N+i]=d[k+2]/255}
+  if(qCv.width!==cw)qCv.width=cw;if(qCv.height!==ch)qCv.height=ch;qCx.drawImage(v,cx0,0,cw,ch,0,0,cw,ch);var Q=qCx.getImageData(0,0,cw,ch);
+  var out=await AI.det.run({images:new AI.ort.Tensor('float32',inp,[1,3,544,960])}),o=out[AI.det.outputNames[0]],a=o.data,n=o.dims[2],bx=[];
+  for(var h=0;h<n;h++){var sc=a[4*n+h];if(sc<.5)continue;
+    var qx=(a[h]-px)/s,qy=(a[n+h]-py)/s,sz=Math.max(a[2*n+h],a[3*n+h])/s,dd=Math.max(1,Math.round(Math.min(sz,cw,ch)));
+    bx.push({x:cx0+Math.round(Math.min(Math.max(qx-dd/2,0),Math.max(0,cw-dd))),y:Math.round(Math.min(Math.max(qy-dd/2,0),Math.max(0,ch-dd))),size:dd,score:sc})}
+  bx.sort(function(p,q){return q.score-p.score});bx=bx.slice(0,288);
+  var keep=[];bx.forEach(function(b){if(!keep.some(function(k){return iou(b,k)>.5}))keep.push(b)});keep=keep.slice(0,96);
+  return{boxes:keep,Q:Q,cx0:cx0,W:W,H:H}}
+function iou(t,n){var r=Math.max(t.x,n.x),e=Math.max(t.y,n.y),o=Math.min(t.x+t.size,n.x+n.size),h=Math.min(t.y+t.size,n.y+n.size),s=Math.max(0,o-r)*Math.max(0,h-e),c=t.size*t.size+n.size*n.size-s;return c<=0?0:s/c}
+
+/* ② 버프창 고르기 (화면 오른쪽 끝 맨 위 줄 기준 + 아래로 정렬된 줄) */
+function med(a){var e=a.slice().sort(function(x,y){return x-y});if(!e.length)return 0;var o=Math.floor(e.length/2);return e.length%2?e[o]:(e[o-1]+e[o])/2}
+function aiRows(list){var rows=[];list.slice().sort(function(p,q){return p.y-q.y||p.x-q.x}).forEach(function(b){
+    var r=rows.find(function(s){return Math.abs(s.y-b.y)<=Math.max(3,Math.max(s.size,b.size)*.42)});
+    if(!r){rows.push({y:b.y,size:b.size,right:b.x+b.size,boxes:[b]});return}
+    r.boxes.push(b);r.y=med(r.boxes.map(function(q){return q.y}));r.size=med(r.boxes.map(function(q){return q.size}));r.right=Math.max.apply(null,r.boxes.map(function(q){return q.x+q.size}))});
+  return rows.sort(function(p,q){return p.y-q.y})}
+function aiFollows(t,e,o){var n=Math.max(t.size,e.size,o.size),s=t.y-e.y,h=t.size/Math.max(1,o.size);if(s<=0||h<.65||h>1.55)return false;
+  var c=Math.abs(t.right-o.right);return(s<=Math.max(8,n*1.75)&&c<=Math.max(8,n*2.25))||(s<=Math.max(8,n*2.6)&&c<=Math.max(4,n*.15)&&t.boxes.length>=2)}
+function aiLocalize(boxes,W){if(!boxes.length)return[];var rows=aiRows(boxes),sz=med(boxes.map(function(b){return b.size})),lim=Math.max(8,sz*3);
+  var r=rows.find(function(d){return d.y<=lim&&W-d.right<=Math.max(8,d.size*3.5)})||rows.find(function(d,m){return d.y<=lim&&(d.boxes.length>=2||(rows[m+1]&&aiFollows(rows[m+1],d,d)))});
+  if(!r)return[];var sel=[r],u=r;for(var k=rows.indexOf(r)+1;k<rows.length;k++){if(!aiFollows(rows[k],u,r))break;sel.push(rows[k]);u=rows[k]}
+  var out=[];sel.forEach(function(row,ri){row.boxes.sort(function(p,q){return p.x-q.x}).forEach(function(b,ci){b.row=ri;b.col=ci;out.push(b)})});return out}
+/* 아이콘 잘라내기 (양선형 보간, 크기 o×o). m=여백 비율 */
+function aiIcon(D,b,o,m){var Q=D.Q,qd=Q.data,qw=Q.width,qh=Q.height,size=b.size*(1+2*(m||0)),x0=b.x-D.cx0-b.size*(m||0),y0=b.y-b.size*(m||0),st=size/o,out=new Uint8ClampedArray(o*o*4);
+  for(var yy=0;yy<o;yy++){var cy=y0+(yy+.5)*st-.5,f=Math.min(qh-1,Math.max(0,Math.floor(cy))),l=Math.min(qh-1,f+1),dy=Math.min(1,Math.max(0,cy-Math.floor(cy)));
+    for(var xx=0;xx<o;xx++){var cx=x0+(xx+.5)*st-.5,u=Math.min(qw-1,Math.max(0,Math.floor(cx))),mm=Math.min(qw-1,u+1),dx=Math.min(1,Math.max(0,cx-Math.floor(cx)));
+      var M=(f*qw+u)*4,S=(f*qw+mm)*4,Wq=(l*qw+u)*4,Y=(l*qw+mm)*4,R=(yy*o+xx)*4;
+      for(var k=0;k<4;k++){var z=qd[M+k]*(1-dx)+qd[S+k]*dx,vv=qd[Wq+k]*(1-dx)+qd[Y+k]*dx;out[R+k]=Math.round(z*(1-dy)+vv*dy)}}}
+  return{width:o,height:o,data:out}}
+
+/* ③ 남은 시간 읽기 (center-ocr-v8: RGB + 노란 숫자 마스크 3장 = 6채널) */
+var OCR_TH=[[.32,.28,.64,.05,.07],[.42,.38,.72,.02,.04],[.25,.24,.58,.09,.06]];
+async function aiOCR(icons){if(!icons.length)return[];var B=Math.min(40,icons.length),P=1024,inp=new Float32Array(B*6*P);
+  for(var n=0;n<B;n++){var dd=icons[n].data,h=n*6*P;for(var c=0;c<P;c++){var r=dd[c*4]/255,g=dd[c*4+1]/255,b=dd[c*4+2]/255;
+      inp[h+c]=r*2-1;inp[h+P+c]=g*2-1;inp[h+2*P+c]=b*2-1;var x=c%32,y=(c-x)/32,inr=x>=1&&x<31&&y>=4&&y<27,mx=Math.max(r,g,b),mn=Math.min(r,g,b);
+      for(var t=0;t<3;t++){var T=OCR_TH[t];inp[h+(t+3)*P+c]=inr&&r>=T[0]&&g>=T[1]&&b<=T[2]&&(r+g)/2-b>=T[3]&&mx-mn>=T[4]?1:-1}}}
+  var o=await AI.ocr.run({image:new AI.ort.Tensor('float32',inp,[B,6,32,32])}),pr=o.presence_logits.data,co=o.colon_logits.data,ln=o.length_logits.data,dg=o.digit_logits.data,res=[];
+  function am(arr,off,len){var b=0;for(var i=1;i<len;i++)if(arr[off+i]>arr[off+b])b=i;return b}
+  for(var k=0;k<B;k++){if(am(pr,k*2,2)===0){res.push(null);continue}
+    var m=[am(dg,(k*3)*10,10),am(dg,(k*3+1)*10,10),am(dg,(k*3+2)*10,10)],S,txt,valid;
+    if(am(co,k*2,2)===1){txt=m[0]+':'+m[1]+m[2];S=m[0]*60+m[1]*10+m[2];valid=m[0]>=1&&m[0]<=9&&m[1]<=5}
+    else{var L=am(ln,k*3,3)+1;txt=m.slice(0,L).join('');S=Number(txt);valid=S>=1&&S<=600}
+    res.push(valid?{text:txt,sec:S,ok:S<=120}:null)}
+  return res}
+
+/* ④-1 4종 자동 인식 */
+async function aiGroups(icons,sel){if(AI.grpSt!=='ready'||!icons.length)return{};var B=icons.length,P=1024,inp=new Float32Array(B*3*P);
+  for(var n=0;n<B;n++){var dd=icons[n].data;for(var c=0;c<P;c++){inp[n*3*P+c]=(dd[c*4]/255-.5)/.5;inp[n*3*P+P+c]=(dd[c*4+1]/255-.5)/.5;inp[n*3*P+2*P+c]=(dd[c*4+2]/255-.5)/.5}}
+  var T=new AI.ort.Tensor('float32',inp,[B,3,32,32]),cand={};
+  for(var gi=0;gi<AI.grp.length;gi++){var G=AI.grp[gi],o=await G.ses.run({input:T}),lg=o.logits.data,em=o.embedding.data,list=[];
+    for(var k=0;k<B;k++){var mg=lg[k*2]-lg[k*2+1];if(mg<G.thr)continue;var best=-1;
+      for(var p=0;p<G.np;p++){var dot=0,off=p*G.dim;for(var q=0;q<G.dim;q++)dot+=em[k*G.dim+q]*G.proto[off+q];if(dot>best)best=dot}
+      if(best>=G.gthr)list.push({k:k,margin:mg})}
+    cand[G.g]=list}
+  /* 한 칸이 두 종류로 잡히면 점수 높은 쪽만 */
+  var owner={};Object.keys(cand).forEach(function(g){cand[g].forEach(function(c){if(!owner[c.k]||owner[c.k].margin<c.margin)owner[c.k]={g:g,margin:c.margin}})});
+  var res={};GROUPS.forEach(function(G){res[G.g]=(cand[G.g]||[]).filter(function(c){return owner[c.k].g===G.g})
+    .sort(function(p,q){return sel[q.k].row-sel[p.k].row||q.margin-p.margin}).slice(0,G.max).map(function(c){return c.k})});
+  return res}
+
+/* ④-2 등록한 아이콘과 비교: 칸 주변 12% 여백을 36×36으로 잘라 등록 아이콘(32×32)을 찾음 (숫자·회색 막 무시하는 기존 비교 방식) */
+function ctxFromRGBA(d,w,h){var G=new Float32Array(w*h),FM=new Uint8Array(w*h);
+  for(var i=0,k=0;k<w*h;i+=4,k++){G[k]=d[i]*.299+d[i+1]*.587+d[i+2]*.114;FM[k]=isText(d[i],d[i+1],d[i+2])?1:0}
+  return{d:d,w:w,h:h,G:G,Gh:hipass(G,w,h),FM:dilate(FM,w,h),x0:0,y0:0,W:w,H:h}}
+function aiMatch(b,D,box){var ic=aiIcon(D,box,36,.0625);return searchBuff(b,ctxFromRGBA(ic.data,36,36),false)}
+
+/* 한 주기: 2초마다 */
+var BSA={};
+async function aiBuffCycle(now){if(AI.busy)return;AI.busy=true;var t0=performance.now();
+  try{var D=await aiDetect(),sel=aiLocalize(D.boxes,D.W),icons=sel.map(function(b){return aiIcon(D,b,32,0)}),reads=await aiOCR(icons.slice(0,40)),thr=1-cfg.buffChange/100;
+    var rel=function(b){return{x:b.x/D.W,y:b.y/D.H,w:b.size/D.W,h:b.size/D.H}};AI.boxes=sel.map(rel);AI.found=D.boxes.length;
+    cfg.buffs.forEach(function(b,i){if(!b.tpl.ai)return;var st=BS[i]||(BS[i]=newBS()),best=0,bk=-1;
+      sel.forEach(function(box,k){var r=aiMatch(b,D,box);if(r&&r.s>best){best=r.s;bk=k}});
+      trackBuff(st,b.name,best>=thr&&bk>=0?{at:rel(sel[bk]),read:reads[bk]}:null,now,best)});
+    if(cfg.buffAuto&&AI.grpSt==='ready'){var asg=await aiGroups(icons,sel);
+      GROUPS.forEach(function(G){var st=BSA[G.g]||(BSA[G.g]=newBS()),ks=asg[G.g]||[],left=buffLeft(st,now),pick=-1;
+        /* 같은 종류가 여러 개면(물약) 지금 추적 중인 남은 시간과 맞는 칸, 없으면 가장 먼저 끝나는 칸 */
+        ks.forEach(function(k){var r=reads[k];if(pick<0){pick=k;return}var rp=reads[pick];
+          if(left!==null&&r&&r.ok&&Math.abs(r.sec-left)<=3){pick=k;return}
+          if(r&&r.ok&&(!rp||!rp.ok||r.sec<rp.sec))pick=k});
+        if(pick>=0)st.icon=icons[pick];
+        trackBuff(st,G.name,pick>=0?{at:rel(sel[pick]),read:reads[pick]}:null,now,pick>=0?1:0)})}
+    AI.ms=Math.round(performance.now()-t0)}
+  catch(e){AI.err=String(e&&e.message||e).slice(0,140)}
+  AI.busy=false;updateStatus();if(stream&&!$('stage').classList.contains('hide'))draw()}
+function buffLeft(st,now){return st.rem!=null?st.rem-(now-st.remAt)/1000:null}
+/* 남은 시간 추적: 두 번 연속 '흐른 시간만큼' 맞게 읽혔을 때만 채택 → 미리 알림, 사라지면 종료 알림 */
+function trackBuff(st,name,hit,now,sim){st.sim=sim;var r=hit&&hit.read;
+  if(hit){if(st.ended){st.ended=false;st.warned=0;st.rem=null;st.raw=null}
+    st.seen=true;st.lost=false;st.lastSeen=now;st.endSince=0;st.at=hit.at;st.read=r?r.text:'';st.phase=r?(r.ok?'sec':'long'):'min';
+    if(r&&r.ok){var left0=buffLeft(st,now);
+      if(st.raw!=null&&now-st.rawAt<7000&&Math.abs((st.raw-(now-st.rawAt)/1000)-r.sec)<=2.5){if(left0===null||r.sec>left0+5)st.warned=0;st.rem=r.sec;st.remAt=now}
+      st.raw=r.sec;st.rawAt=now}
+    else if(r&&!r.ok){st.rem=null;st.raw=null;st.warned=0}}
+  else st.at=null;
+  var left=buffLeft(st,now);
+  if(hit&&cfg.buffWarn>0&&left!==null&&left>0&&left<=cfg.buffWarn&&st.warned<LIM[cfg.buffCnt]&&(st.warned===0||now-st.warnLast>=cfg.buffInt*1000)){
+    st.warned++;st.warnLast=now;notify('buff',name+' '+Math.ceil(left)+'초 남음'+(st.warned>1?' ('+st.warned+'번째)':''))}
+  if(!hit&&st.seen&&!st.ended){if(!st.endSince)st.endSince=now;var near=left!==null&&left<=cfg.buffHold+4;
+    if(near||cfg.buffEarly){if(now-st.endSince>=cfg.buffHold*1000){st.ended=true;st.endAt=now;st.rem=null;st.raw=null;
+        if(cfg.buffEndOn)notify('buff',name+' 종료');else addLog('sys',name+' 종료')}}
+    else st.lost=true}}
+/* 등록: AI가 준비됐으면 드래그한 곳과 가장 잘 겹치는 칸을 자동으로 잘라 32×32로 저장 */
+async function aiRegister(r){var W=v.videoWidth,H=v.videoHeight,cx=(r.x+r.w/2)*W,cy=(r.y+r.h/2)*H;
+  try{while(AI.busy)await new Promise(function(ok){setTimeout(ok,50)});AI.busy=true;var D=await aiDetect();AI.busy=false;
+    var best=null,bd=1e9;D.boxes.forEach(function(b){var dx=b.x+b.size/2-cx,dy=b.y+b.size/2-cy,dist=Math.hypot(dx,dy);if(dist<bd){bd=dist;best=b}});
+    if(!best||bd>best.size*.8){registerBuff(r);return}
+    var ic=aiIcon(D,best,32,0),px=[];for(var i=0;i<ic.data.length;i+=4)px.push(ic.data[i],ic.data[i+1],ic.data[i+2]);
+    var n=1,names=cfg.buffs.map(function(b){return b.name});while(names.indexOf('버프 '+n)>=0)n++;
+    cfg.buffs.push({name:'버프 '+n,tpl:{w:32,h:32,px:px,ai:true},pos:{x:best.x/W,y:best.y/H,w:best.size/W,h:best.size/H}});BS.push(newBS());
+    renderBuffs();updateStatus();draw();$('hint').textContent='‘버프 '+n+'’를 AI로 등록했습니다. 이름은 버프 카드에서 바꿀 수 있습니다. (자동 저장됨)'}
+  catch(e){AI.busy=false;registerBuff(r)}}
+
 /* ---------- 상태 표시 ---------- */
 function runeState(){if(!cfg.on.rune)return['꺼짐','off'];if(!cfg.rune)return['미설정','off'];if(!stream)return['대기 중','off'];if(paused)return['일시정지','off'];
   if(R.active)return['룬 감지됨 ('+R.cnt+'번 알림)','alert'];
@@ -1227,10 +1408,10 @@ function huntState(){if(!cfg.on.hunt)return['꺼짐','off'];if(!cfg.hunt)return[
   if(H.stalled)return['멈춤 의심 ('+H.sec+'초)','alert'];
   if(H.ep)return['재개 확인 중 ('+H.chg.length+'/'+cfg.huntResume+')','warn'];
   return['사냥 중','ok']}
-function updateStatus(){if(!R)return;var r=runeState(),h=huntState(),bf=buffState(),bo=boostState();renderBoost(bo);swUI(document);
+function updateStatus(){if(!R)return;$('buffAI').textContent=aiStatusText();var r=runeState(),h=huntState(),bf=buffState(),bo=boostState();renderBoost(bo);swUI(document);
   $('pickBoost').classList.toggle('done',!!cfg.boost||!!(B&&B.seen));
   $('buffS').textContent=bf[0];$('buffS').className='status'+(bf[1]==='alert'?' alert':bf[1]==='warn'?' warn':'');updateBuffRows();
-  $('pickBuff').classList.toggle('done',cfg.buffs.length>0);$('pickBuffArea').classList.toggle('done',!!cfg.buffArea);
+  $('pickBuff').classList.toggle('done',cfg.buffs.length>0);$('pickBuffArea').classList.toggle('done',!!cfg.buffArea);$('pickBuffArea').hidden=AI.st==='ready';
   $('runeS').textContent=r[0];$('runeS').className='status'+(r[1]==='alert'?' alert':r[1]==='warn'?' warn':'');
   $('huntS').textContent=h[0];$('huntS').className='status'+(h[1]==='alert'?' alert':'');
   $('runeM').textContent=!cfg.rune?'영역 설정에서 ‘미니맵’을 지정하세요':!stream?'화면 연결 대기':R.info||'감지 준비 중';
