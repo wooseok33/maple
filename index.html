@@ -82,8 +82,7 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
 #hint:empty{display:none}
 
 /* 모듈 */
-.mods{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:16px;align-items:start}
-.mh .rt{display:flex;align-items:center;gap:8px}
+.mods{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:16px;align-items:start}.mh .rt{display:flex;align-items:center;gap:8px}
 .mh h3{white-space:nowrap}
 .sw{width:38px;height:22px;padding:0;border-radius:999px;background:var(--line2);border:0;position:relative;flex:none}
 .sw b{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s}
@@ -103,6 +102,9 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
 .blist li.end .bs{color:var(--bad);font-weight:600}
 .blist .x{width:28px;height:28px;padding:0;border-color:transparent;background:transparent;color:var(--faint)}
 .blist .x:hover{color:var(--bad)}
+.blist .bn{font-size:13px;padding-left:7px;display:flex;align-items:center;gap:6px}
+.btag{font-size:10px;font-weight:700;color:var(--ok);border:1px solid rgba(61,220,151,.4);border-radius:999px;padding:0 6px;line-height:16px}
+.blist .await{justify-content:flex-start;color:var(--faint);font-size:12px;border-style:dashed;padding:9px 12px}
 .blist .empty{justify-content:center;color:var(--faint);font-size:12px;border-style:dashed;padding:14px}
 @media(max-width:980px){.mods{grid-template-columns:1fr 1fr}}
 @media(max-width:680px){.mods{grid-template-columns:1fr}}
@@ -113,11 +115,13 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
 .status.alert{color:var(--bad);border-color:rgba(255,95,95,.4);background:rgba(255,95,95,.1)}
 .status.warn{color:var(--warn);border-color:rgba(245,185,66,.4);background:rgba(245,185,66,.08)}
 .meta{font-size:12px;color:var(--mute);min-height:18px}
-.tbig{font-size:46px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-1px;line-height:1.1;color:var(--ink);text-align:center;margin:4px 0 2px}
+.mt{margin-top:8px}
+.subopts{display:flex;flex-wrap:wrap;gap:6px 14px;padding-left:24px}
+.tbig{font-size:40px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-1px;line-height:1.1;color:var(--ink);text-align:center;margin:4px 0 2px}
 .tbig.off{color:var(--faint)}
 .tbig.alert{color:var(--bad);animation:blink 1s infinite}
 @keyframes blink{50%{opacity:.35}}
-.tsub{text-align:center;font-size:12px;color:var(--mute);margin-bottom:14px;min-height:18px}
+.tsub{text-align:center;margin:0 0 12px}
 .tbtn{display:grid;grid-template-columns:1fr 1fr auto;gap:8px}
 .sample{display:flex;align-items:center;gap:12px;padding:10px;border:1px dashed var(--line2);border-radius:10px;margin-top:12px}
 .sample canvas{width:44px;height:44px;border-radius:8px;background:#000;image-rendering:pixelated;flex:none}
@@ -232,7 +236,7 @@ body.locked>.top,body.locked>main,body.locked>#zoomer{display:none!important}
 <section class="card screen">
   <div id="emptyState" class="empty">
     <h2>게임 화면을 연결하세요</h2>
-    <p>메이플스토리 창을 공유하면 룬·사냥 멈춤을 감지해 알려드립니다.<span class="info" tabindex="0" data-tip="공유 화면은 이 브라우저 안에서만 분석되며 전송되지 않습니다.
+    <p>메이플스토리 창을 공유하면 버프 · 룬 · 사냥 멈춤 · 부스터를 감지해 알려드립니다.<span class="info" tabindex="0" data-tip="공유 화면은 이 브라우저 안에서만 분석되며 전송되지 않습니다.
 게임에는 어떤 입력도 보내지 않습니다.
 공유 창에서 ‘창’ 탭 → MapleStory를 선택하세요.">i</span></p>
     <button class="primary lg" id="start">화면 공유 시작</button>
@@ -241,20 +245,18 @@ body.locked>.top,body.locked>main,body.locked>#zoomer{display:none!important}
     <div class="bar">
       <div class="setup">
         <span class="lbl-sm">영역 설정</span><span class="info l" tabindex="0" data-tip="초록 점 = 지정 완료
-미니맵: 미니맵 전체를 드래그
-경험치바: 경험치바 윗선을 한 번 클릭
-룬 아이콘: 룬이 떠 있을 때 룬 주변을 드래그
-버프 구간: 버프 아이콘이 나오는 영역 전체를 드래그
 버프 아이콘 +: 알림 받을 버프 아이콘 하나에 딱 맞게 드래그
+미니맵: 미니맵 전체를 드래그
+룬 아이콘: 룬이 떠 있을 때 룬 주변을 드래그
+경험치바: 경험치바 윗선을 한 번 클릭
 부스터 (선택): 지정하지 않아도 화면 위쪽 가운데에서 자동으로 찾습니다.
   자동으로 안 잡힐 때만 패널 주변을 드래그하세요.
 지정 후 자동 저장됩니다.">i</span>
-        <button class="chip" id="pickRune" disabled><i></i><span class="lbl">미니맵</span></button>
-        <button class="chip" id="pickHunt" disabled><i></i><span class="lbl">경험치바</span></button>
-        <button class="chip" id="pickTpl" disabled><i></i><span class="lbl">룬 아이콘</span></button>
-        <button class="chip" id="pickBuffArea" disabled><i></i><span class="lbl">버프 구간</span></button>
-        <button class="chip" id="pickBoost" disabled title="선택 사항 — 지정하지 않으면 자동으로 찾습니다"><i></i><span class="lbl">부스터 (선택)</span></button>
         <button class="chip" id="pickBuff" disabled><i></i><span class="lbl">버프 아이콘 +</span></button>
+        <button class="chip" id="pickRune" disabled><i></i><span class="lbl">미니맵</span></button>
+        <button class="chip" id="pickTpl" disabled><i></i><span class="lbl">룬 아이콘</span></button>
+        <button class="chip" id="pickHunt" disabled><i></i><span class="lbl">경험치바</span></button>
+        <button class="chip" id="pickBoost" disabled title="선택 사항 — 지정하지 않으면 자동으로 찾습니다"><i></i><span class="lbl">부스터 (선택)</span></button>
       </div>
       <div class="row">
         <button class="ghost sm" id="togglePrev">미리보기 숨기기</button>
@@ -267,27 +269,44 @@ body.locked>.top,body.locked>main,body.locked>#zoomer{display:none!important}
 </section>
 
 <div class="mods">
-  <!-- 타이머 -->
-  <section class="card" data-mod="timer">
-    <div class="mh"><h3><span class="ico">⏱</span>타이머<span class="info l" tabindex="0" data-tip="설정한 시간이 끝나면 알림을 보냅니다.
-PIP 창의 ‘재시작’으로 바로 다시 시작할 수 있습니다.
-전체 정지 중에는 타이머도 멈춥니다.
-끄면 시간은 계속 흐르지만 알림이 울리지 않습니다.">i</span></h3><div class="rt"><button class="sw" data-k="timer" role="switch" title="켜기/끄기"><b></b></button></div></div>
-    <div class="tbig off" id="timerD">30:00</div>
-    <div class="tsub" id="timerS">대기</div>
-    <div class="tbtn">
-      <button class="primary" id="tToggle">▶ 시작</button>
-      <button id="tRestart">↻ 재시작</button>
-      <button class="ghost icon" id="tReset" title="초기화">⟲</button>
-    </div>
+  <!-- 버프 -->
+  <section class="card" data-mod="buff">
+    <div class="mh"><h3><span class="ico">✦</span>버프 알림<span class="info l" tabindex="0" data-tip="AI가 화면 오른쪽 위 버프창을 자동으로 찾고, 아이콘 위 남은 시간을 직접 읽어
+설정한 시간 전에 미리 알리고, 끝나면 알려줍니다. (2분 이하부터 정확한 초 단위)
+‘버프 아이콘 +’로 알림 받을 아이콘을 드래그하면 등록됩니다. (최대 4개)
+AI를 쓸 수 없는 환경에서는 기존 방식(아이콘 비교)으로 동작합니다.">i</span></h3><div class="rt"><span class="status" id="buffS">미설정</span><button class="sw" data-k="buff" role="switch" title="켜기/끄기"><b></b></button></div></div>
+    <ul class="blist" id="buffList"></ul>
+    <div class="meta mt" id="buffAI"></div>
     <details class="set"><summary>설정</summary>
       <div class="sgrid">
-        <div class="fl"><span>시간</span><span class="row"><input type="number" id="timerMin" min="0" max="600"><span class="u">분</span><input type="number" id="timerSec" min="0" max="59"><span class="u">초</span></span></div>
-        <div class="fl"><span>알림음</span><span class="row"><select id="timerSnd"></select><button class="icon" id="timerTest" title="미리 듣기">▶</button></span></div>
-        <label class="chk"><input type="checkbox" id="timerAuto">끝나면 자동으로 다시 시작<span class="info" tabindex="0" data-tip="알림 후 같은 시간으로 바로 다시 시작합니다.
-30분 비약 주기 등에 유용합니다.">i</span></label>
-        <div class="fr"><span>알림 횟수 <b id="timerCntV"></b></span><input type="range" id="timerCnt" min="0" max="3"></div>
-        <div class="fl"><span>반복 간격</span><span class="row"><input type="number" id="timerInt" min="1" max="60"><span class="u">초</span></span></div>
+        <label class="chk"><input type="checkbox" id="buffAuto">자주 쓰는 버프 자동 인식<span class="info l" tabindex="0" data-tip="경험치 쿠폰 · 물약 · 유니온의 부 · 유니온의 행운을
+등록하지 않아도 자동으로 찾아 알려줍니다. (AI 사용 시)
+필요한 종류만 켜면 모델을 덜 받고 확인도 빨라집니다.
+(종류 하나당 약 4MB, 확인할 때마다 켠 종류의 모델만 실행)">i</span></label>
+        <div id="buffAutoGs" class="subopts">
+          <label class="chk"><input type="checkbox" data-g="expCoupon">경험치 쿠폰</label>
+          <label class="chk"><input type="checkbox" data-g="potion">물약</label>
+          <label class="chk"><input type="checkbox" data-g="unionWealth">유니온의 부</label>
+          <label class="chk"><input type="checkbox" data-g="unionLuck">유니온의 행운</label>
+        </div>
+        <div class="fl"><span>미리 알림 <span class="info l" tabindex="0" data-tip="남은 시간이 이 값 이하가 되면 알립니다. (AI 사용 시)
+버프 숫자는 2분(120초) 이하부터 정확히 읽습니다. 0이면 끔.">i</span></span><span class="row"><input type="number" id="buffWarn" min="0" max="120"><span class="u">초 남았을 때</span></span></div>
+        <label class="chk"><input type="checkbox" id="buffEndOn">버프가 끝나면 알림</label>
+        <div class="fl"><span>알림음</span><span class="row"><select id="buffSnd"></select><button class="icon" id="buffTest" title="미리 듣기">▶</button></span></div>
+        <div class="fr"><span>미리 알림 횟수 <span class="info l" tabindex="0" data-tip="미리 알림을 몇 번 울릴지 정합니다. (종료 알림은 1번)">i</span> <b id="buffCntV"></b></span><input type="range" id="buffCnt" min="0" max="3"></div>
+        <div class="fl"><span>반복 간격</span><span class="row"><input type="number" id="buffInt" min="1" max="60"><span class="u">초</span></span></div>
+        <details class="adv"><summary>고급 설정</summary>
+          <div class="sgrid">
+            <div class="fr"><span>아이콘 일치 기준 <span class="info l" tabindex="0" data-tip="등록한 아이콘과 무늬가 이만큼 이상 달라지면 다른 아이콘(또는 사라짐)으로 봅니다.
+회색 막, 남은 분 숫자, 10분 이하의 노란 초 단위 숫자는 자동으로 무시합니다.
+권장 30% (실측: 같은 버프 88% 이상 / 사라진 경우 35% 이하).
+오탐이 있으면 올리고, 종료를 놓치면 내리세요.">i</span> <b><span id="buffChangeV"></span>% 변화</b></span><input type="range" id="buffChange" min="10" max="90"></div>
+            <label class="chk"><input type="checkbox" id="buffEarly">초 단위 전에 사라져도 알림<span class="info l" tabindex="0" data-tip="기본은 남은 시간이 초 단위(예: 9)로 바뀐 버프만 종료를 감시합니다.
+켜면 분 단위·분:초 표시 중에 갑자기 사라진 경우(사망, 해제 등)도 알립니다.">i</span></label>
+            <div class="fl"><span>유지 시간 <span class="info l" tabindex="0" data-tip="초 단위 단계에서 2초마다 확인하며,
+이 시간 동안 계속 사라져 있어야 종료로 판단합니다.">i</span></span><span class="row"><input type="number" id="buffHold" min="1" max="10"><span class="u">초</span></span></div>
+          </div>
+        </details>
       </div>
     </details>
   </section>
@@ -296,16 +315,16 @@ PIP 창의 ‘재시작’으로 바로 다시 시작할 수 있습니다.
   <section class="card" data-mod="rune">
     <div class="mh"><h3><span class="ico">◆</span>룬 알림<span class="info l" tabindex="0" data-tip="미니맵에서 룬 아이콘을 찾아 알려줍니다.
 룬이 떠 있을 때 ‘룬 아이콘’을 한 번 등록하면 가장 정확합니다.">i</span></h3><div class="rt"><span class="status" id="runeS">대기 중</span><button class="sw" data-k="rune" role="switch" title="켜기/끄기"><b></b></button></div></div>
-    <div class="meta" id="runeM">-</div>
     <div class="sample">
       <canvas id="tplView" width="44" height="44"></canvas>
       <span class="meta" id="tplInfo">등록된 샘플 없음</span><span class="info r" tabindex="0" data-tip="등록한 룬 아이콘 그림입니다.
 게임 창 크기를 바꾸면 다시 등록하세요.">i</span>
     </div>
+    <div class="meta mt" id="runeM">-</div>
     <details class="set"><summary>설정</summary>
       <div class="sgrid">
         <div class="fl"><span>알림음</span><span class="row"><select id="runeSnd"></select><button class="icon" id="runeTest" title="미리 듣기">▶</button></span></div>
-        <div class="fr"><span>알림 횟수 <b id="runeCntV"></b></span><input type="range" id="runeCnt" min="0" max="3"></div>
+        <div class="fr"><span>알림 횟수 <span class="info l" tabindex="0" data-tip="룬이 떠 있는 동안 반복해서 울리는 최대 횟수입니다.">i</span> <b id="runeCntV"></b></span><input type="range" id="runeCnt" min="0" max="3"></div>
         <div class="fl"><span>반복 간격</span><span class="row"><input type="number" id="runeInt" min="1" max="60"><span class="u">초</span></span></div>
         <details class="adv"><summary>고급 설정</summary>
           <div class="sgrid">
@@ -334,16 +353,16 @@ PIP 창의 ‘재시작’으로 바로 다시 시작할 수 있습니다.
 
   <!-- 사냥 멈춤 -->
   <section class="card" data-mod="hunt">
-    <div class="mh"><h3><span class="ico">⚔</span>사냥 멈춤<span class="info l" tabindex="0" data-tip="경험치 숫자가 일정 시간 바뀌지 않으면 알려줍니다.
+    <div class="mh"><h3><span class="ico">⚔</span>사냥 멈춤 알림<span class="info l" tabindex="0" data-tip="경험치 숫자가 일정 시간 바뀌지 않으면 알려줍니다.
 알림 후에는 사냥이 다시 시작될 때까지 조용히 기다립니다.">i</span></h3><div class="rt"><span class="status" id="huntS">대기 중</span><button class="sw" data-k="hunt" role="switch" title="켜기/끄기"><b></b></button></div></div>
     <canvas class="strip" id="huntView" height="30"></canvas>
-    <div class="meta" id="huntM">-</div>
+    <div class="meta mt" id="huntM">-</div>
     <details class="set"><summary>설정</summary>
       <div class="sgrid">
         <div class="fl"><span>멈춤 판정 <span class="info l" tabindex="0" data-tip="이 시간 동안 변화가 없으면 멈춤으로 봅니다.
 몹 리젠이 느린 사냥터는 늘려주세요.">i</span></span><span class="row"><input type="number" id="huntSec" min="1" max="600"><span class="u">초 무변동</span></span></div>
         <div class="fl"><span>알림음</span><span class="row"><select id="huntSnd"></select><button class="icon" id="huntTest" title="미리 듣기">▶</button></span></div>
-        <div class="fr"><span>알림 횟수 <span class="info l" tabindex="0" data-tip="멈춤 1회당 울리는 최대 횟수입니다.">i</span> <b id="huntCntV"></b></span><input type="range" id="huntCnt" min="0" max="3"></div>
+        <div class="fr"><span>알림 횟수 <span class="info l" tabindex="0" data-tip="멈춤 1번에 반복해서 울리는 최대 횟수입니다.">i</span> <b id="huntCntV"></b></span><input type="range" id="huntCnt" min="0" max="3"></div>
         <div class="fl"><span>반복 간격</span><span class="row"><input type="number" id="huntInt" min="1" max="60"><span class="u">초</span></span></div>
         <details class="adv"><summary>고급 설정</summary>
           <div class="sgrid">
@@ -361,38 +380,48 @@ PIP 창의 ‘재시작’으로 바로 다시 시작할 수 있습니다.
       </div>
     </details>
   </section>
-  <!-- 버프 -->
-  <section class="card" data-mod="buff">
-    <div class="mh"><h3><span class="ico">✦</span>버프 알림<span class="info l" tabindex="0" data-tip="AI가 화면 오른쪽 위 버프창을 자동으로 찾고, 아이콘 위 남은 시간을 직접 읽어\n설정한 시간 전에 미리 알리고, 끝나면 알려줍니다. (2분 이하부터 정확한 초 단위)\n‘버프 아이콘 +’로 알림 받을 아이콘을 드래그하면 등록됩니다. (최대 4개)\nAI를 쓸 수 없는 환경에서는 기존 방식(아이콘 비교)으로 동작합니다.">i</span></h3><div class="rt"><span class="status" id="buffS">미설정</span><button class="sw" data-k="buff" role="switch" title="켜기/끄기"><b></b></button></div></div>
-    <div class="meta" id="buffAI" style="margin-bottom:8px"></div>
-    <ul class="blist" id="buffList"></ul>
+  <!-- 부스터 -->
+  <section class="card" data-mod="boost">
+    <div class="mh"><h3><span class="ico">⚡</span>부스터 알림<span class="info l" tabindex="0" data-tip="화면 위쪽 가운데의 ‘남은시간 83.33초’ 패널을 읽어
+설정한 시간이 남았을 때와 끝났을 때 알려줍니다.
+따로 설정할 필요 없이 화면 위쪽 가운데에서 자동으로 찾습니다.
+화면 비율이 달라 숫자 크기가 바뀌어도 자동으로 읽습니다.
+자동으로 안 잡히면 영역 설정의 ‘부스터 (선택)’로 직접 지정하세요.">i</span></h3><div class="rt"><span class="status" id="boostS">미설정</span><button class="sw" data-k="boost" role="switch" title="켜기/끄기"><b></b></button></div></div>
+    <div class="bbig off" id="boostD">--.--<small>초</small></div>
+    <div class="meta mt" id="boostM">-</div>
+    <button class="ghost sm mt" id="boostAutoBtn" hidden>자동 탐색으로 되돌리기</button>
     <details class="set"><summary>설정</summary>
       <div class="sgrid">
-        <div class="fl"><span>미리 알림 <span class="info l" tabindex="0" data-tip="남은 시간이 이 값 이하가 되면 알립니다. (AI 사용 시)\n버프 숫자는 2분(120초) 이하부터 정확히 읽습니다. 0이면 끔.">i</span></span><span class="row"><input type="number" id="buffWarn" min="0" max="120"><span class="u">초 남았을 때</span></span></div>
-        <label class="chk"><input type="checkbox" id="buffEndOn">버프가 끝나면 알림</label>
-        <label class="chk"><input type="checkbox" id="buffAuto">자주 쓰는 버프 자동 인식<span class="info l" tabindex="0" data-tip="경험치 쿠폰 · 물약 · 유니온의 부 · 유니온의 행운을\n등록하지 않아도 자동으로 찾아 알려줍니다. (AI 사용 시)\n켜면 인식 모델(약 17MB)을 한 번 더 받습니다.">i</span></label>
-        <div class="fr"><span>아이콘 일치 기준 <span class="info l" tabindex="0" data-tip="등록한 아이콘과 무늬가 이만큼 이상 달라지면 다른 아이콘(또는 사라짐)으로 봅니다.\n회색 막, 남은 분 숫자, 10분 이하의 노란 초 단위 숫자는 자동으로 무시합니다.\n권장 30% (실측: 같은 버프 88% 이상 / 사라진 경우 35% 이하).\n오탐이 있으면 올리고, 종료를 놓치면 내리세요.">i</span> <b><span id="buffChangeV"></span>% 변화</b></span><input type="range" id="buffChange" min="10" max="90"></div>
-        <label class="chk"><input type="checkbox" id="buffEarly">초 단위 전에 사라져도 알림<span class="info l" tabindex="0" data-tip="기본은 남은 시간이 초 단위(예: 9)로 바뀐 버프만 종료를 감시합니다.\n켜면 분 단위·분:초 표시 중에 갑자기 사라진 경우(사망, 해제 등)도 알립니다.">i</span></label>
-        <div class="fl"><span>유지 시간 <span class="info l" tabindex="0" data-tip="초 단위 단계에서 2초마다 확인하며,\n이 시간 동안 계속 사라져 있어야 종료로 판단합니다.">i</span></span><span class="row"><input type="number" id="buffHold" min="1" max="10"><span class="u">초</span></span></div>
-        <div class="fl"><span>알림음</span><span class="row"><select id="buffSnd"></select><button class="icon" id="buffTest" title="미리 듣기">▶</button></span></div>
-        <div class="fr"><span>미리 알림 횟수 <b id="buffCntV"></b></span><input type="range" id="buffCnt" min="0" max="3"></div>
-        <div class="fl"><span>반복 간격</span><span class="row"><input type="number" id="buffInt" min="1" max="60"><span class="u">초</span></span></div>
+        <div class="fl"><span>미리 알림 <span class="info l" tabindex="0" data-tip="남은 시간이 이 값 이하가 되면 알립니다.
+0으로 두면 미리 알림을 끕니다.">i</span></span><span class="row"><input type="number" id="boostWarn" min="0" max="99"><span class="u">초 남았을 때</span></span></div>
+        <label class="chk"><input type="checkbox" id="boostEnd">부스터가 끝나면 알림</label>
+        <div class="fl"><span>알림음</span><span class="row"><select id="boostSnd"></select><button class="icon" id="boostTest" title="미리 듣기">▶</button></span></div>
+        <div class="fr"><span>미리 알림 횟수 <span class="info l" tabindex="0" data-tip="미리 알림을 몇 번 울릴지 정합니다. (종료 알림은 1번)">i</span> <b id="boostCntV"></b></span><input type="range" id="boostCnt" min="0" max="3"></div>
+        <div class="fl"><span>반복 간격</span><span class="row"><input type="number" id="boostInt" min="1" max="60"><span class="u">초</span></span></div>
       </div>
     </details>
   </section>
-  <!-- 부스터 -->
-  <section class="card" data-mod="boost">
-    <div class="mh"><h3><span class="ico">⚡</span>부스터 알림<span class="info l" tabindex="0" data-tip="화면 위쪽 가운데의 ‘남은시간 83.33초’ 패널을 읽어\n설정한 시간이 남았을 때와 끝났을 때 알려줍니다.\n따로 설정할 필요 없이 화면 위쪽 가운데에서 자동으로 찾습니다.\n화면 비율이 달라 숫자 크기가 바뀌어도 자동으로 읽습니다.\n자동으로 안 잡히면 영역 설정의 ‘부스터 (선택)’로 직접 지정하세요.">i</span></h3><div class="rt"><span class="status" id="boostS">미설정</span><button class="sw" data-k="boost" role="switch" title="켜기/끄기"><b></b></button></div></div>
-    <div class="bbig off" id="boostD">--.--<small>초</small></div>
-    <div class="meta" id="boostM">-</div>
-    <button class="ghost sm" id="boostAutoBtn" hidden style="margin-top:6px">자동 탐색으로 되돌리기</button>
+  <!-- 타이머 -->
+  <section class="card" data-mod="timer">
+    <div class="mh"><h3><span class="ico">⏱</span>타이머 알림<span class="info l" tabindex="0" data-tip="설정한 시간이 끝나면 알림을 보냅니다.
+PIP 창의 ‘재시작’으로 바로 다시 시작할 수 있습니다.
+전체 정지 중에는 타이머도 멈춥니다.
+끄면 시간은 계속 흐르지만 알림이 울리지 않습니다.">i</span></h3><div class="rt"><span class="status" id="timerB">대기</span><button class="sw" data-k="timer" role="switch" title="켜기/끄기"><b></b></button></div></div>
+    <div class="tbig off" id="timerD">30:00</div>
+    <div class="tsub meta" id="timerS">대기</div>
+    <div class="tbtn">
+      <button class="primary" id="tToggle">▶ 시작</button>
+      <button id="tRestart">↻ 재시작</button>
+      <button class="ghost icon" id="tReset" title="초기화">⟲</button>
+    </div>
     <details class="set"><summary>설정</summary>
       <div class="sgrid">
-        <div class="fl"><span>미리 알림 <span class="info l" tabindex="0" data-tip="남은 시간이 이 값 이하가 되면 알립니다.\n0으로 두면 미리 알림을 끕니다.">i</span></span><span class="row"><input type="number" id="boostWarn" min="0" max="99"><span class="u">초 남았을 때</span></span></div>
-        <label class="chk"><input type="checkbox" id="boostEnd">부스터가 끝나면 알림</label>
-        <div class="fl"><span>알림음</span><span class="row"><select id="boostSnd"></select><button class="icon" id="boostTest" title="미리 듣기">▶</button></span></div>
-        <div class="fr"><span>알림 횟수 <span class="info l" tabindex="0" data-tip="미리 알림을 몇 번 울릴지 정합니다. (종료 알림은 1번)">i</span> <b id="boostCntV"></b></span><input type="range" id="boostCnt" min="0" max="3"></div>
-        <div class="fl"><span>반복 간격</span><span class="row"><input type="number" id="boostInt" min="1" max="60"><span class="u">초</span></span></div>
+        <div class="fl"><span>시간</span><span class="row"><input type="number" id="timerMin" min="0" max="600"><span class="u">분</span><input type="number" id="timerSec" min="0" max="59"><span class="u">초</span></span></div>
+        <label class="chk"><input type="checkbox" id="timerAuto">끝나면 자동으로 다시 시작<span class="info l" tabindex="0" data-tip="알림 후 같은 시간으로 바로 다시 시작합니다.
+30분 비약 주기 등에 유용합니다.">i</span></label>
+        <div class="fl"><span>알림음</span><span class="row"><select id="timerSnd"></select><button class="icon" id="timerTest" title="미리 듣기">▶</button></span></div>
+        <div class="fr"><span>알림 횟수 <span class="info l" tabindex="0" data-tip="시간이 끝난 뒤 반복해서 울리는 최대 횟수입니다.">i</span> <b id="timerCntV"></b></span><input type="range" id="timerCnt" min="0" max="3"></div>
+        <div class="fl"><span>반복 간격</span><span class="row"><input type="number" id="timerInt" min="1" max="60"><span class="u">초</span></span></div>
       </div>
     </details>
   </section>
@@ -460,8 +489,8 @@ var v=$('v'),ov=$('ov'),octx=ov.getContext('2d');
 var work=document.createElement('canvas'),wctx=work.getContext('2d',{willReadFrequently:true});
 
 /* ---------- 설정 ---------- */
-var DEF={buffWarn:10,buffEndOn:true,buffAuto:false,on:{timer:true,rune:true,hunt:true,buff:true,boost:true},boost:null,boostWarn:10,boostEnd:true,boostSnd:'siren',boostCnt:0,boostInt:5,
-  rune:null,hunt:null,buffs:[],buffArea:null,buffEarly:false,buffChange:30,buffHold:2,buffCnt:0,buffInt:5,buffSnd:'beep',runeMode:'sample',runeTpl:null,runeColor:'#dd66ff',runeTol:70,runeMinPx:3,runeSim:70,
+var DEF={buffWarn:10,buffEndOn:true,buffAuto:false,buffAutoG:{expCoupon:true,potion:true,unionWealth:true,unionLuck:true},on:{timer:true,rune:true,hunt:true,buff:true,boost:true},boost:null,boostWarn:10,boostEnd:true,boostSnd:'siren',boostCnt:0,boostInt:5,
+  rune:null,hunt:null,buffs:[],buffEarly:false,buffChange:30,buffHold:2,buffCnt:0,buffInt:5,buffSnd:'beep',runeMode:'sample',runeTpl:null,runeColor:'#dd66ff',runeTol:70,runeMinPx:3,runeSim:70,
   runeMin:2,runeMax:40,runeShape:70,runeHold:1,runeCnt:0,runeInt:5,runeSnd:'quiet',
   huntMode:'exp',huntSec:15,huntBr:170,huntD:5,huntCnt:1,huntInt:5,huntResume:2,huntSnd:'quiet',
   timerMin:30,timerSec:0,timerCnt:1,timerInt:5,timerSnd:'chime',timerAuto:false};
@@ -487,7 +516,8 @@ function clean(p){var o=Object.assign({},DEF);if(!p||typeof p!=='object')return 
   if(typeof p.runeColor==='string'&&/^#[0-9a-f]{6}$/i.test(p.runeColor))o.runeColor=p.runeColor.toLowerCase();
   o.runeTpl=okTpl(p.runeTpl);
   /* huntMode가 없던 예전 프리셋은 MP 영역(직접 지정) 방식으로 유지 */
-  o.buffArea=okRect(p.buffArea);o.boost=okRect(p.boost);
+  o.boost=okRect(p.boost);
+  o.buffAutoG=Object.assign({},DEF.buffAutoG);if(p.buffAutoG&&typeof p.buffAutoG==='object')Object.keys(DEF.buffAutoG).forEach(function(k){if(typeof p.buffAutoG[k]==='boolean')o.buffAutoG[k]=p.buffAutoG[k]});
   o.on=Object.assign({},DEF.on);if(p.on&&typeof p.on==='object')Object.keys(DEF.on).forEach(function(k){if(typeof p.on[k]==='boolean')o.on[k]=p.on[k]});
   o.buffs=Array.isArray(p.buffs)?p.buffs.map(function(b){if(!b||typeof b!=='object')return null;var t=okTpl(b.tpl,80),r=okRect(b.pos);
     if(t&&b.tpl&&b.tpl.ai===true)t.ai=true;return t&&r?{name:String(b.name||'버프').slice(0,20),tpl:t,pos:r}:null}).filter(Boolean).slice(0,4):[];
@@ -519,7 +549,7 @@ var HLBL=['1번만','3번까지','5번까지','사냥 재개될 때까지 계속
 function fill(){NUM.concat(STR).forEach(function(k){$(k).value=cfg[k];show(k)});
   BOOL.forEach(function(k){$(k).checked=!!cfg[k]});$('vol').value=vol;
   $('runeMode').value=cfg.runeMode;$('runeColor').value=cfg.runeColor;modeUI();drawTpl();
-  $('huntMode').value=cfg.huntMode;huntUI();renderTimer(true)}
+  $('huntMode').value=cfg.huntMode;huntUI();autoGUI();renderTimer(true)}
 $('runeMode').onchange=function(){cfg.runeMode=$('runeMode').value;modeUI();if(R){R.cand=0;R.boxes=[];R.info='';nextRune=0}updateStatus();draw()};
 $('runeColor').oninput=function(){cfg.runeColor=$('runeColor').value};
 function modeUI(){$('modeSample').hidden=cfg.runeMode!=='sample';$('modeColor').hidden=cfg.runeMode!=='color';
@@ -609,7 +639,10 @@ function sound(kind,mode){
   if(!ac())return;try{(PLAY[mode]||PLAY.quiet)(actx.currentTime+0.03)}catch(e){}}
 $('runeTest').onclick=function(){sound('rune',$('runeSnd').value)};
 $('huntTest').onclick=function(){sound('hunt',$('huntSnd').value)};
-$('buffAuto').addEventListener('change',function(){if(cfg.buffAuto){if(AI.st==='ready')aiLoadGroups();else aiInit()}BSA={};renderBuffs()});
+function autoGUI(){$('buffAutoGs').hidden=!cfg.buffAuto;Array.prototype.forEach.call(document.querySelectorAll('#buffAutoGs input[data-g]'),function(c){c.checked=!!cfg.buffAutoG[c.dataset.g]})}
+$('buffAuto').addEventListener('change',function(){if(cfg.buffAuto){if(AI.st==='ready')aiEnsureGroups();else if(stream)aiInit()}BSA={};AI.gcache=null;autoGUI();renderBuffs()});
+Array.prototype.forEach.call(document.querySelectorAll('#buffAutoGs input[data-g]'),function(c){c.addEventListener('change',function(){
+  cfg.buffAutoG[c.dataset.g]=c.checked;delete BSA[c.dataset.g];AI.gcache=null;if(c.checked&&AI.st==='ready')aiEnsureGroups();renderBuffs();updateStatus()})});
 $('boostTest').onclick=function(){sound('boost',$('boostSnd').value)};
 $('buffTest').onclick=function(){sound('buff',$('buffSnd').value)};
 $('timerTest').onclick=function(){sound('timer',$('timerSnd').value)};
@@ -664,14 +697,17 @@ function timerView(now){var tv={txt:fmt(timerLeft(now))};
   else if(T.st==='done'){tv.sub='시간 종료! 재시작을 누르세요';tv.cls='alert'}
   else{tv.sub='대기 · 시작을 누르세요';tv.cls='off'}
   tv.btn=T.st==='run'?'⏸ 일시정지':T.st==='pause'?'▶ 계속':'▶ 시작';if(!cfg.on.timer)tv.sub+=' · 알림 꺼짐';return tv}
+/* 타이머 상태 배지 (메인 카드·PIP 공통) */
+function timerBadge(){if(!cfg.on.timer)return['꺼짐','off'];return T.st==='run'?['진행 중','ok']:T.st==='done'?['시간 종료','alert']:T.st==='pause'?['일시정지','off']:['대기','off']}
 function renderTimer(force){var tv=timerView(Date.now()),key=tv.txt+'|'+tv.sub+'|'+tv.cls;
   if(!force&&key===T.shown)return;T.shown=key;
   $('timerD').textContent=tv.txt;$('timerD').className='tbig'+(tv.cls==='run'?'':' '+tv.cls);
   $('timerS').textContent=tv.sub;$('tToggle').textContent=tv.btn;
+  var tb=timerBadge();$('timerB').textContent=tb[0];$('timerB').className='status'+(tb[1]==='alert'?' alert':tb[1]==='ok'?'':'');
   if(pip){var d=pip.document,g=function(i){return d.getElementById(i)};if(!g('pTimer'))return;
     g('pTimer').textContent=tv.txt;g('pTimer').className=tv.cls;g('pSub').textContent=tv.sub;
     g('pToggle').textContent=T.st==='run'?'⏸':'▶';g('pToggle').title=tv.btn.slice(2);
-    g('pTitle').textContent=fmt(durMs())+' 타이머'}}
+    }}
 
 /* ---------- 전체 정지 ---------- */
 function setPaused(p){var now=Date.now();paused=p;
@@ -683,7 +719,7 @@ $('pause').onclick=function(){setPaused(!paused)};
 
 /* ---------- 화면 공유 ---------- */
 var stream=null,picking=null,drag=null;
-function setUI(){var on=!!stream;$('emptyState').hidden=on;$('liveView').hidden=!on;$('start').disabled=on;$('stop').disabled=!on;$('pickRune').disabled=!on;$('pickHunt').disabled=!on;$('pickTpl').disabled=!on;$('pickBuff').disabled=!on;$('pickBuffArea').disabled=!on;$('pickBoost').disabled=!on}
+function setUI(){var on=!!stream;$('emptyState').hidden=on;$('liveView').hidden=!on;$('start').disabled=on;$('stop').disabled=!on;$('pickRune').disabled=!on;$('pickHunt').disabled=!on;$('pickTpl').disabled=!on;$('pickBuff').disabled=!on;$('pickBoost').disabled=!on}
 $('start').onclick=async function(){ac();
   try{if('Notification' in window&&Notification.permission==='default')Notification.requestPermission();
     /* displaySurface:'window' → 공유 선택창이 '창' 탭으로 바로 열림 (Chrome/Edge)
@@ -734,7 +770,7 @@ function openZoom(kind,title){if(!stream||!v.videoWidth)return;Z.kind=kind;Z.sel
   zFit();Z.hover=null;
   if(kind==='exp'){var W=v.videoWidth,Hh=v.videoHeight;   /* 화면 아래쪽(경험치바)을 2배 확대해서 보여줌 */
     zZoom(2,{x:zc.width/2,y:Z.oy+Hh*Z.s});Z.oy=Math.max(Z.oy,zc.height-Hh*Z.s-30);Z.ox=Math.min(0,Math.max(Z.ox,zc.width-W*Z.s))}
-  else{var lb=cfg.buffs[cfg.buffs.length-1],focus=kind==='boost'?cfg.boost:kind==='rune'||kind==='buffArea'?null:kind==='hunt'?cfg.hunt:kind==='buff'?cfg.buffArea||(lb?{x:lb.pos.x-lb.pos.w*4,y:lb.pos.y-lb.pos.h,w:lb.pos.w*9,h:lb.pos.h*3}:null):cfg.rune;if(focus)zFocus(focus)}
+  else{var lb=cfg.buffs[cfg.buffs.length-1],focus=kind==='boost'?cfg.boost:kind==='rune'?null:kind==='hunt'?cfg.hunt:kind==='buff'?(lb?{x:lb.pos.x-lb.pos.w*4,y:lb.pos.y-lb.pos.h,w:lb.pos.w*9,h:lb.pos.h*3}:null):cfg.rune;if(focus)zFocus(focus)}
   cancelAnimationFrame(Z.raf);(function loop(){zDraw();Z.raf=requestAnimationFrame(loop)})()}
 function closeZoom(){$('zoomer').hidden=true;cancelAnimationFrame(Z.raf);Z.kind=null;Z.sel=null;Z.pan=null}
 function zDraw(){var W=v.videoWidth,Hh=v.videoHeight;if(zc.width!==zc.clientWidth||zc.height!==zc.clientHeight)zSize();
@@ -805,7 +841,6 @@ function box(r,c,t){if(!r)return;octx.strokeStyle=c;octx.lineWidth=2;octx.stroke
 function draw(){octx.clearRect(0,0,ov.width,ov.height);box(cfg.rune,'#a855f7','미니맵');box(cfg.hunt,'#22c55e',huntLabel());
   if(stream&&cfg.boost){octx.setLineDash([6,4]);box(cfg.boost,'#ff9a3c','부스터');octx.setLineDash([])}
   if(stream&&B&&B.box)box(B.box,'#ff9a3c',cfg.boost?'':'부스터');
-  if(stream&&cfg.buffArea){octx.setLineDash([6,4]);box(cfg.buffArea,'#f5b942','버프 구간');octx.setLineDash([])}
   if(stream&&AI.st==='ready'&&cfg.on.buff&&AI.boxes){octx.globalAlpha=.35;AI.boxes.forEach(function(b){box(b,'#f5b942','')});octx.globalAlpha=1}
   if(stream){cfg.buffs.forEach(function(b,i){var st=BS[i];if(st&&st.at)box(st.at,'#f5b942',b.name)});
     GROUPS.forEach(function(G){var st=BSA[G.g];if(cfg.buffAuto&&st&&st.at)box(st.at,'#3ddc97',G.name)})}
@@ -936,7 +971,6 @@ function tick(){if(paused)return;var now=Date.now();
 
 /* ---------- 버프 ---------- */
 function newBS(){return{sim:null,seen:false,endSince:0,ended:false,cnt:0,last:0,phase:null,lost:false}}
-$('pickBuffArea').onclick=function(){openZoom('buffArea','버프 구간 지정 — 버프 아이콘이 나오는 영역 전체(여러 줄)를 넉넉하게 드래그하세요')};
 $('pickBuff').onclick=function(){if(cfg.buffs.length>=4){$('hint').textContent='버프는 최대 4개까지 등록할 수 있습니다. 필요 없는 버프를 지우고 다시 등록하세요.';return}
   openZoom('buff','버프 아이콘 등록 — 버프 아이콘 하나에 딱 맞게 드래그하세요')};
 function registerBuff(r){var g=grab(r);if(!g||g.w<4||g.h<4){$('hint').textContent='아이콘이 너무 작습니다. 확대해서 다시 드래그하세요.';return}
@@ -970,7 +1004,7 @@ function prepBuff(b){var c=BCACHE.get(b);if(c)return c;var T=b.tpl,w=T.w,h=T.h,g
   c.keep=dilate(c.artY,w,h);for(var k2=0;k2<w*h;k2++)if(c.keep[k2])c.tm[k2]=0;
   BCACHE.set(b,c);return c}
 function nccOf(n,sa,saa,st,stt,sat){if(n<2)return 0;var va=saa-sa*sa/n,vt=stt-st*st/n;if(va<=1e-6||vt<=1e-6)return 0;return Math.max(0,(sat-sa*st/n)/Math.sqrt(va*vt))}
-/* 화면의 한 영역을 잘라 비교용 데이터(흑백·세부무늬·숫자마스크)를 만듦 — 버프 구간은 한 번만 만들어 모든 버프가 공유 */
+/* 화면의 한 영역을 잘라 비교용 데이터(흑백·세부무늬·숫자마스크)를 만듦 — 한 번만 만들어 모든 버프가 공유 */
 function frameCtx(px0,py0,px1,py1){var W=v.videoWidth,Hh=v.videoHeight;if(!W)return null;px0=Math.max(0,px0);py0=Math.max(0,py0);px1=Math.min(W,px1);py1=Math.min(Hh,py1);
   if(px1-px0<4||py1-py0<4)return null;
   var gr=grab({x:px0/W,y:py0/Hh,w:(px1-px0)/W,h:(py1-py0)/Hh}),d=gr.d,w=gr.w,h=gr.h,G=new Float32Array(w*h),FM=new Uint8Array(w*h);
@@ -1021,7 +1055,7 @@ function searchBuff(b,C,wide){var P=prepBuff(b),tw=P.w,th=P.h,e=P.e,d=C.d,w=C.w,
     cand.forEach(function(c){for(var dy=-1;dy<=1;dy++)for(var dx=-1;dx<=1;dx++)full(c.x+dx,c.y+dy)})}
   return{s:Math.min(1,best),phase:bx2<0?null:timePhase(d,w,bx2,by2,P),
     at:bx2<0?null:{x:(C.x0+bx2)/C.W,y:(C.y0+by2)/C.H,w:tw/C.W,h:th/C.H}}}
-/* 버프 구간을 지정하지 않았을 때: 등록 위치 기준 좌우 아이콘 3~4칸, 위아래 ±2px만 탐색 */
+/* 등록 위치 기준 좌우 아이콘 3~4칸, 위아래 ±2px만 탐색 */
 function buffSim(b){var W=v.videoWidth,Hh=v.videoHeight;if(!W)return null;var P=prepBuff(b),tw=P.w,th=P.h;
   var x0=Math.round(b.pos.x*W),y0=Math.round(b.pos.y*Hh),C=frameCtx(x0-3*tw,y0-2,x0+4*tw,y0+th+2);
   return C?searchBuff(b,C,false):null}
@@ -1039,7 +1073,9 @@ function timePhase(d,w,px,py,P){var tw=P.w,th=P.h,e=P.e,cnt=0,xmin=1e9,xmax=-1,y
    ① 분 단위 표시 / ② 분:초 표시 → 버프 유지
    ③ 초 단위 표시에 들어가면 2초 간격으로 추적하다가, 아이콘 일치도가 기준 아래로 떨어지면 종료 알림
    (설정의 '초 단위 전에 사라져도 알림'을 켜면 ①·② 단계에서 갑자기 사라진 경우도 알림) */
-function checkBuffs(now){var thr=1-cfg.buffChange/100,A=cfg.buffArea,AC=null;
+/* AI를 쓸 수 없을 때(기존 방식): 버프창이 있는 화면 오른쪽 위 1/4 전체를 자동으로 탐색 → 따로 구간 지정 불필요 */
+function checkBuffs(now){var thr=1-cfg.buffChange/100,A={x:.5,y:0,w:.5,h:.5},AC=null;
+  if(!cfg.buffs.some(function(b){return !(b.tpl.ai&&AI.st==='ready')}))return;
   if(A){var W=v.videoWidth,Hh=v.videoHeight;AC=frameCtx(Math.floor(A.x*W),Math.floor(A.y*Hh),Math.ceil((A.x+A.w)*W),Math.ceil((A.y+A.h)*Hh))}
   cfg.buffs.forEach(function(b,i){if(b.tpl.ai&&AI.st==='ready')return;var st=BS[i]||(BS[i]=newBS()),res=AC?searchBuff(b,AC,true):buffSim(b);if(!res)return;var s=res.s;st.sim=s;st.at=s>=thr?res.at:null;
     if(s>=thr){st.seen=true;st.lost=false;st.endSince=0;if(res.phase)st.phase=res.phase;if(st.ended){st.ended=false;st.cnt=0}}
@@ -1051,9 +1087,12 @@ function checkBuffs(now){var thr=1-cfg.buffChange/100,A=cfg.buffArea,AC=null;
 function fmtLeft(x){x=Math.max(0,Math.ceil(x));return x>=60?Math.floor(x/60)+':'+('0'+x%60).slice(-2):x+'초'}
 /* 추적 중인 항목: 등록한 버프 + (켜져 있으면) 4종 자동 인식 */
 function buffEntries(){var L=cfg.buffs.map(function(b,i){return{name:b.name,st:BS[i],ai:!!b.tpl.ai}});
-  if(cfg.buffAuto&&AI.grpSt==='ready')GROUPS.forEach(function(G){L.push({name:G.name,st:BSA[G.g],ai:true,auto:true})});return L}
+  GROUPS.forEach(function(G){var st=BSA[G.g];if(grpOn(G)&&grpModel(G)&&st&&st.seen)L.push({name:G.name,st:st,ai:true,auto:true,g:G.g})});return L}
+/* 켜 두었지만 아직 버프창에서 못 찾은 자동 인식 종류 */
+function autoWaiting(){return GROUPS.filter(function(G){var st=BSA[G.g];return grpOn(G)&&grpModel(G)&&!(st&&st.seen)}).map(function(G){return G.name})}
+var lastBuffSig='';function buffSig(){return buffEntries().map(function(e){return e.auto?e.g:'u'}).join(',')+'|'+autoWaiting().join(',')}
 function buffState(){if(!cfg.on.buff)return['꺼짐','off'];var E=buffEntries(),n=E.length;
-  if(!n)return[cfg.buffAuto&&AI.grpSt==='loading'?'자동 인식 준비 중':'미설정','off'];if(!stream)return['대기 중','off'];if(paused)return['일시정지','off'];
+  if(!n)return[grpLoading()?'자동 인식 준비 중':autoWaiting().length&&stream?'버프 찾는 중':'미설정',autoWaiting().length&&stream?'warn':'off'];if(!stream)return['대기 중','off'];if(paused)return['일시정지','off'];
   var now=Date.now(),end=[],soon=[],wait=0,seen=0;
   E.forEach(function(e){var st=e.st;if(!st){wait++;return}var left=buffLeft(st,now);
     if(st.ended&&now-(st.endAt||now)<20000)end.push(e.name);else if(!st.seen)wait++;
@@ -1063,12 +1102,13 @@ function buffState(){if(!cfg.on.buff)return['꺼짐','off'];var E=buffEntries(),
   if(!seen)return['버프 찾는 중','warn'];
   return['유지 중 '+seen+'개'+(wait?' · 안 보임 '+wait:''),'ok']}
 function aiStatusText(){if(!cfg.on.buff)return'';
-  var t=AI.st==='ready'?'🧠 AI 인식 사용 중'+(AI.found!=null?' · 버프창 칸 '+(AI.boxes||[]).length+'개 인식'+(AI.ms?' · '+AI.ms+'ms':''):'')
+  var t=AI.st==='ready'?'🧠 AI 인식 사용 중'+(AI.found!=null?' · 버프창 칸 '+(AI.boxes||[]).length+'개'+(AI.lastDetMs?' · 칸 찾기 '+AI.lastDetMs+'ms(6초마다)':'')+(AI.lastQuickMs?' · 숫자 확인 '+AI.lastQuickMs+'ms':''):'')
     :AI.st==='loading'?'🧠 AI 모델 불러오는 중… (처음 한 번 약 25MB)':AI.st==='fail'?'⚠ AI를 쓸 수 없어 기존 방식으로 동작 (GitHub 주소로 열어야 AI 사용 가능)':'🧠 화면 공유를 시작하면 AI 인식을 준비합니다';
-  if(cfg.buffAuto)t+=AI.grpSt==='loading'?' · 자동 인식 준비 중':AI.grpSt==='ready'?' · 4종 자동 인식 켜짐':AI.grpSt==='fail'?' · 자동 인식 모델을 불러오지 못함':'';
+  if(cfg.buffAuto){var on=GROUPS.filter(grpOn),rd=on.filter(grpModel),fl=on.filter(function(G){return AI.G[G.g]==='fail'});
+    t+=!on.length?' · 자동 인식: 켠 종류 없음':grpLoading()?' · 자동 인식 준비 중 ('+rd.length+'/'+on.length+')':' · 자동 인식 '+rd.length+'종'+(fl.length?' (불러오기 실패 '+fl.map(function(G){return G.name}).join(', ')+')':'')}
   return t}
-function renderBuffs(){var ul=$('buffList');ul.textContent='';var E=buffEntries();
-  if(!E.length){var e=document.createElement('li');e.className='empty';e.textContent=AI.st==='ready'?'‘버프 아이콘 +’로 알림 받을 아이콘을 드래그하세요':'화면 공유 후 ‘버프 아이콘 +’로 등록하세요';ul.appendChild(e);return}
+function renderBuffs(){var ul=$('buffList');ul.textContent='';var E=buffEntries(),AW=autoWaiting();lastBuffSig=buffSig();
+  if(!E.length&&!AW.length){var e=document.createElement('li');e.className='empty';e.textContent=AI.st==='ready'?'‘버프 아이콘 +’로 알림 받을 아이콘을 드래그하세요':'화면 공유 후 ‘버프 아이콘 +’로 등록하세요';ul.appendChild(e);return}
   cfg.buffs.forEach(function(b,i){var li=document.createElement('li'),c=document.createElement('canvas'),T=b.tpl;c.width=T.w;c.height=T.h;
     var cx=c.getContext('2d'),im=cx.createImageData(T.w,T.h);for(var k=0,j=0;k<T.w*T.h;k++,j+=3){im.data[k*4]=T.px[j];im.data[k*4+1]=T.px[j+1];im.data[k*4+2]=T.px[j+2];im.data[k*4+3]=255}
     cx.putImageData(im,0,0);
@@ -1078,19 +1118,21 @@ function renderBuffs(){var ul=$('buffList');ul.textContent='';var E=buffEntries(
     var x=document.createElement('button');x.className='x';x.textContent='✕';x.title='삭제';
     x.onclick=function(){cfg.buffs.splice(i,1);BS.splice(i,1);renderBuffs();updateStatus();draw()};
     li.appendChild(c);li.appendChild(info);li.appendChild(x);ul.appendChild(li)});
-  if(cfg.buffAuto&&AI.grpSt==='ready')GROUPS.forEach(function(G){var li=document.createElement('li'),c=document.createElement('canvas');c.width=32;c.height=32;c.dataset.g=G.g;
-    var info=document.createElement('div');info.className='bi';var nm=document.createElement('b');nm.textContent=G.name+' (자동)';nm.style.cssText='font-size:13px;padding-left:7px';
+  E.forEach(function(e){if(!e.auto)return;var li=document.createElement('li'),c=document.createElement('canvas');c.width=32;c.height=32;
+    var info=document.createElement('div');info.className='bi';var nm=document.createElement('b');nm.className='bn';nm.textContent=e.name;
+    var tg=document.createElement('span');tg.className='btag';tg.textContent='자동';nm.appendChild(tg);
     var stt=document.createElement('span');stt.className='bs';info.appendChild(nm);info.appendChild(stt);li.appendChild(c);li.appendChild(info);ul.appendChild(li)});
+  if(AW.length){var w=document.createElement('li');w.className='await';w.textContent='자동 인식 대기 · '+AW.join(' · ');w.title='켜 둔 종류가 버프창에 나타나면 여기 목록에 추가됩니다';ul.appendChild(w)}
   updateBuffRows()}
-function updateBuffRows(){var lis=$('buffList').children,now=Date.now(),E=buffEntries();$('buffAI').textContent=aiStatusText();
+function updateBuffRows(){if(buffSig()!==lastBuffSig){renderBuffs();return}var lis=$('buffList').children,now=Date.now(),E=buffEntries();$('buffAI').textContent=aiStatusText();
   E.forEach(function(e,i){var li=lis[i],st=e.st;if(!li||li.classList.contains('empty'))return;
-    if(e.auto&&st&&st.icon){var c=li.querySelector('canvas');if(c&&!c.dataset.done){var cx=c.getContext('2d'),im=cx.createImageData(32,32);im.data.set(st.icon.data);cx.putImageData(im,0,0);c.dataset.done=1}}
+    if(e.auto&&st&&st.icon){var c=li.querySelector('canvas');if(c&&c.dataset.src!==String(st.iconT)){c.dataset.src=String(st.iconT);var cx=c.getContext('2d'),im=cx.createImageData(32,32);im.data.set(st.icon.data);cx.putImageData(im,0,0)}}
     var t;if(!stream)t='화면 연결 대기';else if(paused)t='일시정지';else if(!st)t='확인 중';
     else{var left=buffLeft(st,now),pct=!e.auto&&st.sim!=null?' · 일치 '+Math.round(st.sim*100)+'%':'';
       if(st.ended)t='종료됨 · 다시 켜면 자동 복구';
-      else if(!st.seen)t=(e.auto?'버프창에서 찾는 중':'아이콘을 찾는 중')+pct;
+      else if(!st.seen)t=(e.auto?'버프창에 없음':'아이콘을 찾는 중')+pct;
       else if(!st.at)t='안 보임'+(left!==null?' · 예상 '+fmtLeft(left):'')+(st.lost?' (알림 없음)':'')+pct;
-      else if(e.ai){t=left!==null?fmtLeft(left)+' 남음'+(cfg.buffWarn>0&&left<=cfg.buffWarn?' ⚠':''):st.phase==='long'?'남은 '+st.read+' (2분 넘음)':'유지 중 (분 단위 표시)';t+=pct}
+      else if(e.ai){t=(e.auto?'인식됨'+(st.count>1?' ×'+st.count:'')+' · ':'')+(left!==null?fmtLeft(left)+' 남음'+(cfg.buffWarn>0&&left<=cfg.buffWarn?' ⚠':''):st.phase==='long'?'남은 '+st.read+' (2분 넘음)':'유지 중 (분 단위 표시)');t+=pct}
       else{var PH={min:'분 단위',mmss:'분:초',sec:'초 단위 · 2초마다 추적'};t=(st.phase==='sec'?'곧 종료 · ':'유지 중 · ')+(PH[st.phase]||'')+pct}}
     li.className=st&&st.ended&&stream&&!paused?'end':'';li.querySelector('.bs').textContent=t})}
 
@@ -1261,23 +1303,31 @@ function aiInit(){if(AI.st!=='idle')return;AI.st='loading';updateStatus();
       AI.ort=ort;AI.det=await ort.InferenceSession.create(AIP.det,{executionProviders:['wasm']});
       AI.ocr=await ort.InferenceSession.create(AIP.ocr,{executionProviders:['wasm']})}
     try{await load(false)
-      AI.st='ready';addLog('sys','버프 AI 준비 완료');if(cfg.buffAuto)aiLoadGroups()}
+      AI.st='ready';addLog('sys','버프 AI 준비 완료');if(cfg.buffAuto)aiEnsureGroups()}
     catch(e){AI.st='fail';AI.err=String(e&&e.message||e).slice(0,140)}
     updateStatus();renderBuffs()})()}
-/* 4종 자동 인식 모델: 켤 때만 받음 (약 17MB) */
-async function aiLoadGroups(){if(AI.grpSt==='loading'||AI.grpSt==='ready'||AI.st!=='ready')return;AI.grpSt='loading';updateStatus();
-  try{AI.grp=await Promise.all(GROUPS.map(async function(G){var base='models/'+G.dir+'/';
-      var pol=await (await fetch(base+'policy.json')).json(),gate=await (await fetch(base+pol.files.positiveGate)).json();
-      var ses=await AI.ort.InferenceSession.create(base+pol.files.onnx,{executionProviders:['wasm'],externalData:[{path:pol.files.onnxData,data:base+pol.files.onnxData}]});
-      var dim=gate.embeddingDim,flat=new Float32Array(gate.prototypes.length*dim);gate.prototypes.forEach(function(p,i){flat.set(p,i*dim)});
-      return Object.assign({},G,{ses:ses,thr:pol.thresholds[G.g],gthr:gate.threshold,proto:flat,np:gate.prototypes.length,dim:dim})}));
-    AI.grpSt='ready';addLog('sys','버프 4종 자동 인식 준비 완료')}
-  catch(e){AI.grpSt='fail';AI.err=String(e&&e.message||e).slice(0,140)}
+/* 자동 인식 모델: 켠 종류만 하나씩 받음 (종류당 약 4MB) */
+AI.G={};
+function grpOn(G){return cfg.buffAuto&&cfg.buffAutoG[G.g]}
+function grpModel(G){var m=AI.G[G.g];return m&&m.ses?m:null}
+function grpLoading(){return GROUPS.some(function(G){return grpOn(G)&&AI.G[G.g]==='loading'})}
+function aiEnsureGroups(){if(AI.st!=='ready')return;GROUPS.forEach(function(G){if(grpOn(G)&&!AI.G[G.g])aiLoadGroup(G)})}
+async function aiLoadGroup(G){AI.G[G.g]='loading';updateStatus();
+  try{var base='models/'+G.dir+'/',pol=await (await fetch(base+'policy.json')).json(),gate=await (await fetch(base+pol.files.positiveGate)).json();
+    var ses=await AI.ort.InferenceSession.create(base+pol.files.onnx,{executionProviders:['wasm'],externalData:[{path:pol.files.onnxData,data:base+pol.files.onnxData}]});
+    var dim=gate.embeddingDim,flat=new Float32Array(gate.prototypes.length*dim);gate.prototypes.forEach(function(p,i){flat.set(p,i*dim)});
+    AI.G[G.g]=Object.assign({},G,{ses:ses,thr:pol.thresholds[G.g],gthr:gate.threshold,proto:flat,np:gate.prototypes.length,dim:dim});
+    AI.gcache=null;addLog('sys',G.name+' 자동 인식 준비 완료')}
+  catch(e){AI.G[G.g]='fail';AI.err=String(e&&e.message||e).slice(0,140)}
   updateStatus();renderBuffs()}
 
 /* ① 탐지 */
 var aiCv=document.createElement('canvas');aiCv.width=960;aiCv.height=544;var aiCx=aiCv.getContext('2d',{willReadFrequently:true});
 var qCv=document.createElement('canvas'),qCx=qCv.getContext('2d',{willReadFrequently:true});
+/* 화면 오른쪽 위 1/4을 원래 해상도로 가져오기 (아이콘 잘라내기용 — 가벼움) */
+function aiQuad(){var W=v.videoWidth,H=v.videoHeight,cx0=Math.floor(W/2),cw=W-cx0,ch=Math.floor(H/2);
+  if(qCv.width!==cw)qCv.width=cw;if(qCv.height!==ch)qCv.height=ch;qCx.drawImage(v,cx0,0,cw,ch,0,0,cw,ch);
+  return{Q:qCx.getImageData(0,0,cw,ch),cx0:cx0,W:W,H:H}}
 async function aiDetect(){var W=v.videoWidth,H=v.videoHeight,cx0=Math.floor(W/2),cw=W-cx0,ch=Math.floor(H/2);
   var s=Math.min(960/cw,544/ch),nw=Math.round(cw*s),nh=Math.round(ch*s),px=Math.max(0,Math.round((960-nw)/2-.1)),py=Math.max(0,Math.round((544-nh)/2-.1));
   aiCx.fillStyle='rgb(114,114,114)';aiCx.fillRect(0,0,960,544);aiCx.drawImage(v,cx0,0,cw,ch,px,py,nw,nh);
@@ -1330,10 +1380,11 @@ async function aiOCR(icons){if(!icons.length)return[];var B=Math.min(40,icons.le
   return res}
 
 /* ④-1 4종 자동 인식 */
-async function aiGroups(icons,sel){if(AI.grpSt!=='ready'||!icons.length)return{};var B=icons.length,P=1024,inp=new Float32Array(B*3*P);
+async function aiGroups(icons,sel){var M=GROUPS.filter(grpOn).map(grpModel).filter(Boolean);if(!M.length||!icons.length)return{};
+  var B=icons.length,P=1024,inp=new Float32Array(B*3*P);
   for(var n=0;n<B;n++){var dd=icons[n].data;for(var c=0;c<P;c++){inp[n*3*P+c]=(dd[c*4]/255-.5)/.5;inp[n*3*P+P+c]=(dd[c*4+1]/255-.5)/.5;inp[n*3*P+2*P+c]=(dd[c*4+2]/255-.5)/.5}}
   var T=new AI.ort.Tensor('float32',inp,[B,3,32,32]),cand={};
-  for(var gi=0;gi<AI.grp.length;gi++){var G=AI.grp[gi],o=await G.ses.run({input:T}),lg=o.logits.data,em=o.embedding.data,list=[];
+  for(var gi=0;gi<M.length;gi++){var G=M[gi],o=await G.ses.run({input:T}),lg=o.logits.data,em=o.embedding.data,list=[];
     for(var k=0;k<B;k++){var mg=lg[k*2]-lg[k*2+1];if(mg<G.thr)continue;var best=-1;
       for(var p=0;p<G.np;p++){var dot=0,off=p*G.dim;for(var q=0;q<G.dim;q++)dot+=em[k*G.dim+q]*G.proto[off+q];if(dot>best)best=dot}
       if(best>=G.gthr)list.push({k:k,margin:mg})}
@@ -1352,24 +1403,41 @@ function aiMatch(b,D,box){var ic=aiIcon(D,box,36,.0625);return searchBuff(b,ctxF
 
 /* 한 주기: 2초마다 */
 var BSA={};
+/* 속도 개선: 가장 무거운 '버프 칸 찾기'는 6초마다 또는 추적 중인 버프가 안 보일 때만 다시 하고,
+   그 사이에는 저장해 둔 칸 위치에서 숫자만 다시 읽음. 4종 판별도 칸 배치가 바뀔 때(또는 10초마다)만 다시 함 */
+AI.cache=null;AI.gcache=null;AI.redetect=false;AI.nDet=0;AI.nCyc=0;window.__AI=AI;
 async function aiBuffCycle(now){if(AI.busy)return;AI.busy=true;var t0=performance.now();
-  try{var D=await aiDetect(),sel=aiLocalize(D.boxes,D.W),icons=sel.map(function(b){return aiIcon(D,b,32,0)}),reads=await aiOCR(icons.slice(0,40)),thr=1-cfg.buffChange/100;
-    var rel=function(b){return{x:b.x/D.W,y:b.y/D.H,w:b.size/D.W,h:b.size/D.H}};AI.boxes=sel.map(rel);AI.found=D.boxes.length;
+  try{var C=AI.cache,W=v.videoWidth,H=v.videoHeight,full=!C||AI.redetect||now-C.t>=6000||C.W!==W||C.H!==H,D,sel;
+    if(full){D=await aiDetect();sel=aiLocalize(D.boxes,D.W);AI.cache={boxes:sel,t:now,W:W,H:H,found:D.boxes.length};AI.nDet++;AI.lastDetMs=Math.round(performance.now()-t0)}
+    else{D=aiQuad();sel=C.boxes}
+    AI.redetect=false;AI.nCyc++;
+    var icons=sel.map(function(b){return aiIcon(D,b,32,0)}),reads=await aiOCR(icons.slice(0,40)),thr=1-cfg.buffChange/100,miss=false;
+    var rel=function(b){return{x:b.x/D.W,y:b.y/D.H,w:b.size/D.W,h:b.size/D.H}};AI.boxes=sel.map(rel);AI.found=AI.cache.found;
     cfg.buffs.forEach(function(b,i){if(!b.tpl.ai)return;var st=BS[i]||(BS[i]=newBS()),best=0,bk=-1;
       sel.forEach(function(box,k){var r=aiMatch(b,D,box);if(r&&r.s>best){best=r.s;bk=k}});
-      trackBuff(st,b.name,best>=thr&&bk>=0?{at:rel(sel[bk]),read:reads[bk]}:null,now,best)});
-    if(cfg.buffAuto&&AI.grpSt==='ready'){var asg=await aiGroups(icons,sel);
-      GROUPS.forEach(function(G){var st=BSA[G.g]||(BSA[G.g]=newBS()),ks=asg[G.g]||[],left=buffLeft(st,now),pick=-1;
+      var hit=best>=thr&&bk>=0;if(!hit&&pending(st,now))miss=true;
+      /* 저장된 칸에서 못 찾으면 바로 끝났다고 보지 않고, 다음 주기에 칸을 새로 찾아 확인 */
+      if(!hit&&!full&&st.seen&&!st.ended){st.sim=best;return}
+      trackBuff(st,b.name,hit?{at:rel(sel[bk]),read:reads[bk]}:null,now,best)});
+    if(GROUPS.some(function(G){return grpOn(G)&&grpModel(G)})){
+      var key=sel.map(function(b){return b.x+','+b.y+','+b.size}).join('|'),gc=AI.gcache,asg;
+      if(gc&&gc.key===key&&now-gc.t<10000&&!full)asg=gc.asg;else{asg=await aiGroups(icons,sel);AI.gcache={key:key,t:now,asg:asg}}
+      GROUPS.forEach(function(G){if(!grpOn(G)||!grpModel(G))return;var st=BSA[G.g]||(BSA[G.g]=newBS()),ks=asg[G.g]||[],left=buffLeft(st,now),pick=-1;st.count=ks.length;
         /* 같은 종류가 여러 개면(물약) 지금 추적 중인 남은 시간과 맞는 칸, 없으면 가장 먼저 끝나는 칸 */
         ks.forEach(function(k){var r=reads[k];if(pick<0){pick=k;return}var rp=reads[pick];
           if(left!==null&&r&&r.ok&&Math.abs(r.sec-left)<=3){pick=k;return}
           if(r&&r.ok&&(!rp||!rp.ok||r.sec<rp.sec))pick=k});
-        if(pick>=0)st.icon=icons[pick];
+        if(pick>=0&&!st.icon){st.icon=icons[pick];st.iconT=now}
+        if(pick<0&&st.seen&&!st.ended){if(pending(st,now))miss=true;if(!full)return}
         trackBuff(st,G.name,pick>=0?{at:rel(sel[pick]),read:reads[pick]}:null,now,pick>=0?1:0)})}
-    AI.ms=Math.round(performance.now()-t0)}
+    /* 안 보이는 버프가 있으면 다음 주기도 칸을 새로 찾음 (종료 알림이 늦지 않게) */
+    if(miss)AI.redetect=true;
+    AI.ms=Math.round(performance.now()-t0);if(!full)AI.lastQuickMs=AI.ms}
   catch(e){AI.err=String(e&&e.message||e).slice(0,140)}
   AI.busy=false;updateStatus();if(stream&&!$('stage').classList.contains('hide'))draw()}
 function buffLeft(st,now){return st.rem!=null?st.rem-(now-st.remAt)/1000:null}
+/* 사라진 걸 확인 중인 버프: 보였다가 안 보인 지 10초 이내이고 아직 종료 처리 안 됨 */
+function pending(st,now){return st.seen&&!st.ended&&(!st.lastSeen||now-st.lastSeen<10000)}
 /* 남은 시간 추적: 두 번 연속 '흐른 시간만큼' 맞게 읽혔을 때만 채택 → 미리 알림, 사라지면 종료 알림 */
 function trackBuff(st,name,hit,now,sim){st.sim=sim;var r=hit&&hit.read;
   if(hit){if(st.ended){st.ended=false;st.warned=0;st.rem=null;st.raw=null}
@@ -1411,7 +1479,7 @@ function huntState(){if(!cfg.on.hunt)return['꺼짐','off'];if(!cfg.hunt)return[
 function updateStatus(){if(!R)return;$('buffAI').textContent=aiStatusText();var r=runeState(),h=huntState(),bf=buffState(),bo=boostState();renderBoost(bo);swUI(document);
   $('pickBoost').classList.toggle('done',!!cfg.boost||!!(B&&B.seen));
   $('buffS').textContent=bf[0];$('buffS').className='status'+(bf[1]==='alert'?' alert':bf[1]==='warn'?' warn':'');updateBuffRows();
-  $('pickBuff').classList.toggle('done',cfg.buffs.length>0);$('pickBuffArea').classList.toggle('done',!!cfg.buffArea);$('pickBuffArea').hidden=AI.st==='ready';
+  $('pickBuff').classList.toggle('done',cfg.buffs.length>0);
   $('runeS').textContent=r[0];$('runeS').className='status'+(r[1]==='alert'?' alert':r[1]==='warn'?' warn':'');
   $('huntS').textContent=h[0];$('huntS').className='status'+(h[1]==='alert'?' alert':'');
   $('runeM').textContent=!cfg.rune?'영역 설정에서 ‘미니맵’을 지정하세요':!stream?'화면 연결 대기':R.info||'감지 준비 중';
@@ -1436,39 +1504,44 @@ function pinUI(){try{localStorage.setItem('maple-pin',pinned?'1':'0')}catch(e){}
   c.disabled=pinned;c.title=pinned?'고정 중에는 닫을 수 없습니다':'PIP 닫기'}
 window.addEventListener('beforeunload',function(e){if(pip&&pinned){e.preventDefault();e.returnValue=''}});
 var PIPCSS='*{box-sizing:border-box}html,body{margin:0;height:100%}'+
- 'body{background:#0f1012;color:#e9ecef;font-family:"Pretendard","Noto Sans KR",system-ui,sans-serif;display:flex;flex-direction:column;padding:10px;gap:10px;font-size:14px}'+
+ 'body{background:#0d1014;color:#e8edf3;font-family:"Pretendard","Noto Sans KR",system-ui,sans-serif;display:flex;flex-direction:column;padding:10px;gap:10px;font-size:14px}'+
  'header{display:flex;align-items:center;gap:6px}header b{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sp{flex:1}'+
- 'button{height:34px;min-width:34px;border:0;border-radius:10px;background:#212328;color:#c9ced6;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;font:inherit;font-weight:700;padding:0 9px}'+
- 'button:hover{background:#2b2e34}button.on{background:#ff5b6b;color:#fff}button.pin{background:#2b6cb0;color:#fff}button:disabled{opacity:.35;cursor:not-allowed}button.pill{border-radius:999px}'+
- 'header svg{width:18px;height:18px}#pVolBox input{width:100%}'+
- '.center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:110px}'+
- '#pTimer{font-size:44px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1;color:#e9ecef}'+
- '#pTimer.off{color:#7d848c}#pTimer.alert{color:#ff6b6b;animation:blink 1s infinite}'+
- '#pSub{color:#8b929a;margin-top:4px;font-size:13px}'+
- '.tbtns{display:flex;gap:8px;margin-top:10px}#pRestart{background:#2f7d5b;color:#fff;padding:0 16px}#pRestart:hover{background:#38946c}'+
- '.rows,.plog{list-style:none;margin:0;padding:0;background:#17191c;border-radius:10px}'+
- '.rows li{display:flex;align-items:center;gap:8px;padding:8px 10px;border-top:1px solid #24272b}.rows li:first-child{border-top:0}'+
- '.rows i{width:10px;height:10px;border-radius:50%;border:2px solid #7d848c;flex:none}'+
- '.rows li.ok i{background:#5cc79a;border-color:#5cc79a}.rows li.warn i{background:#f2c14e;border-color:#f2c14e}.rows li.alert i{background:#ff6b6b;border-color:#ff6b6b;animation:blink 1s infinite}'+
- '.rows .sw{width:34px;height:20px;padding:0;min-width:0;border-radius:999px;background:#3a3f46;position:relative;flex:none}.rows .sw b{position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:#fff;transition:left .15s}.rows .sw.on{background:#3ddc97}.rows .sw.on b{left:17px}.rows li.off span,.rows li.off em{opacity:.45}'+
- '.rows span{font-weight:700;flex:1}.rows em{font-style:normal;color:#8b929a}.rows li.alert em{color:#ff6b6b;font-weight:700}.rows li.warn em{color:#f2c14e}'+
- '.plog li{display:flex;gap:8px;padding:6px 10px;font-size:12px;border-top:1px solid #24272b;color:#c9ced6}.plog li:first-child{border-top:0}'+
- '.plog time{color:#7d848c;flex:none}.plog .k{font-weight:700;flex:none}.plog .rune .k{color:#c084fc}.plog .hunt .k{color:#ff8a6b}.plog .timer .k{color:#6cb6ff}.plog .buff .k{color:#f5b942}.plog .boost .k{color:#ff9a3c}.plog .sys,.plog .empty{color:#7d848c}'+
+ 'button{height:34px;min-width:34px;border:0;border-radius:10px;background:#1b2129;color:#c9d1db;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;font:inherit;font-weight:700;padding:0 9px}'+
+ 'button:hover{background:#262e38}button.on{background:#ff5f5f;color:#fff}button.pin{background:#4cc2ff;color:#06131c}button:disabled{opacity:.35;cursor:not-allowed}button.pill{border-radius:999px}'+
+ 'header svg{width:18px;height:18px}#pVolBox input{width:100%;accent-color:#4cc2ff}'+
+ '.rows,.plog{list-style:none;margin:0;padding:0;background:#151a20;border:1px solid #262e38;border-radius:10px}'+
+ '.rows li{display:flex;align-items:center;gap:8px;padding:8px 10px;border-top:1px solid #262e38}.rows li:first-child{border-top:0}'+
+ '.rows i{width:10px;height:10px;border-radius:50%;border:2px solid #5d6875;flex:none}'+
+ '.rows li.ok i{background:#3ddc97;border-color:#3ddc97}.rows li.warn i{background:#f5b942;border-color:#f5b942}.rows li.alert i{background:#ff5f5f;border-color:#ff5f5f;animation:blink 1s infinite}'+
+ '.rows .sw{width:34px;height:20px;padding:0;min-width:0;border-radius:999px;background:#323c48;position:relative;flex:none}.rows .sw b{position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:#fff;transition:left .15s}.rows .sw.on{background:#3ddc97}.rows .sw.on b{left:17px}.rows li.off span,.rows li.off em{opacity:.45}'+
+ '.rows span{font-weight:700;flex:1}.rows em{font-style:normal;color:#8b96a5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60%}.rows li.alert em{color:#ff5f5f;font-weight:700}.rows li.warn em{color:#f5b942}'+
+ '.rows li.tmain{flex-direction:column;align-items:stretch;gap:2px;padding:6px 10px 10px}'+
+ '.tline{display:flex;align-items:center;gap:8px}#pTimer{flex:1;font-size:34px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1;color:#e8edf3}'+
+ '#pTimer.off{color:#5d6875}#pTimer.alert{color:#ff5f5f;animation:blink 1s infinite}'+
+ '#pSub{color:#8b96a5;font-size:12px}'+
+ '#pRestart{background:#4cc2ff;color:#06131c;padding:0 14px}#pRestart:hover{filter:brightness(1.08);background:#4cc2ff}'+
+ '.plog li{display:flex;gap:8px;padding:6px 10px;font-size:12px;border-top:1px solid #262e38;color:#c9d1db}.plog li:first-child{border-top:0}'+
+ '.plog time{color:#5d6875;flex:none}.plog .k{font-weight:700;flex:none}.plog .rune .k{color:#c084fc}.plog .hunt .k{color:#ff5f5f}.plog .timer .k{color:#6cb6ff}.plog .buff .k{color:#f5b942}.plog .boost .k{color:#ff9a3c}.plog .sys,.plog .empty{color:#5d6875}'+
  '.plog .m{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}'+
  '@keyframes blink{50%{opacity:.35}}';
-var PIPHTML='<header><span>🍁</span><b id="pTitle">타이머</b><span class="sp"></span>'+
+var SWP=function(k){return'<button class="sw" data-k="'+k+'" title="켜기/끄기"><b></b></button>'};
+var PIPHTML='<header><span>🍁</span><b id="pTitle">재획 알리미</b><span class="sp"></span>'+
  '<button id="pPause"></button><button id="pVol" class="pill" title="볼륨 조절">'+ICON_VOL+'<span id="pVolV"></span></button>'+
  '<button id="pPin" title="고정">'+ICON_PIN+'</button><button id="pClose" title="PIP 닫기">✕</button></header>'+
  '<div id="pVolBox" hidden><input type="range" id="pVolR" min="0" max="100" aria-label="볼륨"></div>'+
- '<section class="center"><div id="pTimer"></div><div id="pSub"></div>'+
- '<div class="tbtns"><button id="pRestart" title="타이머를 처음부터 다시 시작">↻ 재시작</button><button id="pToggle"></button></div></section>'+
- '<ul class="rows"><li id="pTimerRow"><i></i><span>타이머</span><em></em><button class="sw" data-k="timer" title="켜기/끄기"><b></b></button></li><li id="pRune"><i></i><span>룬</span><em></em><button class="sw" data-k="rune" title="켜기/끄기"><b></b></button></li><li id="pHunt"><i></i><span>사냥 멈춤</span><em></em><button class="sw" data-k="hunt" title="켜기/끄기"><b></b></button></li><li id="pBuff"><i></i><span>버프</span><em></em><button class="sw" data-k="buff" title="켜기/끄기"><b></b></button></li><li id="pBoost"><i></i><span>부스터</span><em></em><button class="sw" data-k="boost" title="켜기/끄기"><b></b></button></li></ul>'+
+ '<ul class="rows">'+
+ '<li id="pBuff"><i></i><span>버프</span><em></em>'+SWP('buff')+'</li>'+
+ '<li id="pRune"><i></i><span>룬</span><em></em>'+SWP('rune')+'</li>'+
+ '<li id="pHunt"><i></i><span>사냥 멈춤</span><em></em>'+SWP('hunt')+'</li>'+
+ '<li id="pBoost"><i></i><span>부스터</span><em></em>'+SWP('boost')+'</li></ul>'+
+ '<ul class="rows"><li id="pTimerRow"><i></i><span>타이머</span><em></em>'+SWP('timer')+'</li>'+
+ '<li class="tmain"><div class="tline"><div id="pTimer"></div><button id="pRestart" title="타이머를 처음부터 다시 시작">↻ 재시작</button><button id="pToggle"></button></div><div id="pSub"></div></li></ul>'+
  '<ul class="plog" id="plog"></ul>';
 
 $('pipBtn').onclick=async function(){
   if(pip){pip.close();return}
   if(!('documentPictureInPicture' in window)){$('hint').textContent='이 브라우저는 PIP 창을 지원하지 않습니다. Chrome 또는 Edge 최신 버전에서 열어주세요.';return}
-  var w;try{w=await documentPictureInPicture.requestWindow({width:340,height:600})}
+  var w;try{w=await documentPictureInPicture.requestWindow({width:340,height:560})}
   catch(e){$('hint').textContent='PIP 창을 열지 못했습니다. ('+(e&&e.name||'오류')+')';return}
   pip=w;var d=w.document;d.title='재획 알리미';
   var st=d.createElement('style');st.textContent=PIPCSS;d.head.appendChild(st);
@@ -1491,7 +1564,7 @@ function renderPip(r,h,bf,bo){if(!pip)return;var d=pip.document,g=function(i){re
     pb.title=paused?'정지됨 — 눌러서 다시 시작':'전체 정지'}
   g('pVolV').textContent=vol+'%';g('pVolR').value=vol;
   pipRow(g('pRune'),r);pipRow(g('pHunt'),h);if(bf)pipRow(g('pBuff'),bf);if(bo)pipRow(g('pBoost'),bo);
-  pipRow(g('pTimerRow'),cfg.on.timer?[T.st==='run'?'진행 중':T.st==='done'?'시간 종료':T.st==='pause'?'일시정지':'대기',T.st==='done'?'alert':T.st==='run'?'ok':'off']:['꺼짐','off']);
+  pipRow(g('pTimerRow'),timerBadge());
   swUI(d)}
 
 /* ---------- 시작 ---------- */
