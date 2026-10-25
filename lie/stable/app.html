@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+
+<html lang="ko">
+<head>
+<script src="./lie-bridge.js?v=1"></script>
+<script src="./r39-release.js?rev=M400-P2-20261021-RELEASE1"></script>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="#f7f7f3" name="theme-color"/>
+<meta content="메이플스토리 거짓말탐지기 화면을 브라우저에서 로컬 분석해 한국어 음성과 알림으로 알려주는 비공식 웹 도구" name="description"/>
+<title>M400-P2 정식 버전 · 거탐 알리미 · M-ALERT</title>
+<meta content="1.1.52" name="m-alert-version"/>
+<meta content="M400-P2" name="m-alert-base-candidate"/>
+<link href="./favicon.svg" rel="icon" type="image/svg+xml"/>
+<link href="./styles.css?v=M400-P2-20261021-RELEASE1" rel="stylesheet"/>
+<script>
+    window.Module = window.Module || {};
+  </script>
+<script defer="" src="../assets/ocr/tesseract.min.js?v=M400-P2-20261021-RELEASE1"></script>
+<script defer="" src="./ocr-engine.js?rev=M400-P2-20261021-RELEASE1"></script>
+<script defer="" src="../assets/contour-matching-core-r39.js?rev=M400-P2-20261021-RELEASE1"></script>
+<script defer="" src="../assets/contour-worker-client-r39.js?rev=M400-P2-20261021-RELEASE1"></script>
+<script defer="" src="./text-contour-matcher.js?rev=M400-P2-20261021-RELEASE1"></script>
+<script defer="" src="./colored-input-detector.js?v=M400-P2-20261021-RELEASE1"></script>
+<script defer="" src="./click-guide-detector.js?rev=M400-P2-20261021-RELEASE1"></script>
+<script defer="" src="./sentence-guide-detector.js?v=M400-P2-20261021-RELEASE1"></script>
+<script defer="" src="./panel-guide-detector.js?v=M400-P2-20261021-RELEASE1"></script>
+<script defer="" src="./app.js?rev=M400-P2-20261021-RELEASE1"></script>
+<meta content="noindex,nofollow,noarchive" name="robots"/>
+<style id="mAlertChannelStyle">
+.malert-channel-bar{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 18px;background:rgba(61,139,255,.14);border-bottom:1px solid rgba(61,139,255,.34);font-size:13px;line-height:1.4}
+.malert-channel-bar strong{font-weight:900} .malert-channel-bar span{opacity:.78;margin-left:8px}
+.malert-channel-switch{display:inline-flex;align-items:center;justify-content:center;min-height:34px;padding:0 12px;border-radius:9px;border:1px solid rgba(255,255,255,.17);text-decoration:none;color:inherit;background:rgba(255,255,255,.06);font-weight:800;white-space:nowrap}
+@media(max-width:640px){.malert-channel-bar{align-items:flex-start;flex-direction:column}}
+</style>
+<link rel="stylesheet" href="../assets/r39-ui-polish.css?rev=M400-P2-20261021-RELEASE1" id="r39UiPolish"/>
+<meta name="m-alert-release-version" content="M400-P2 · 1.1.52 · 2026.10.21"><meta name="m-alert-release-build" content="M400-P2-20261021-RELEASE1"></head>
+<body class="r39-ui">
+<div class="site-support-bar" data-support-bar="">
+<div class="site-support-inner">
+<button aria-haspopup="dialog" class="support-thanks-button" data-open-donation="" type="button">
+<span aria-hidden="true">💝</span><strong>후원 감사</strong>
+</button>
+</div>
+</div>
+<div class="donation-modal" data-donation-modal="" hidden="">
+<section aria-labelledby="donationTitle" aria-modal="true" class="donation-dialog" role="dialog" tabindex="-1">
+<button aria-label="후원 창 닫기" class="donation-close" data-close-donation="" type="button">×</button>
+<p class="donation-kicker">M-ALERT SUPPORT</p>
+<h2 id="donationTitle">M-ALERT 개발 후원</h2>
+<p class="donation-description">QR을 휴대폰 카메라 또는 토스 앱으로 스캔해 주세요. 후원자명과 후원금액은 공개하지 않습니다.</p>
+<div class="donation-qr-wrap">
+
+</div>
+<ul class="donation-notes">
+<li>후원은 서버·도메인 유지와 기능 개선에 사용됩니다.</li>
+<li>후원 여부와 관계없이 모든 핵심 기능은 동일합니다.</li>
+<li>송금 또는 QR 관련 문의는 Telegram @MAlert1로 보내주세요.</li>
+</ul>
+<div class="donation-actions">
+<a href="https://t.me/MAlert1" rel="noopener noreferrer" target="_blank">텔레그램 문의</a>
+<button data-close-donation="" type="button">닫기</button>
+</div>
+</section>
+</div>
+<div class="urgent-overlay" hidden="" id="urgentOverlay">
+<section aria-modal="true" class="urgent-card" role="alertdialog">
+<span class="urgent-mark">!</span>
+<div>
+<small>거짓말탐지기 감지</small>
+<h2 id="urgentTitle">거짓말탐지기가 발견되었습니다.</h2>
+<p id="urgentBody">현재 메이플 화면을 확인하세요.</p>
+</div>
+<button id="dismissAlertBtn" type="button">확인</button>
+</section>
+</div>
+<header class="topbar">
+<a class="brand" href="../index.html">
+<span class="brand-mark">!</span>
+<span>
+<strong>거탐 알리미</strong>
+<small>브라우저 로컬 감지</small>
+</span>
+</a>
+<div class="top-status">
+<span class="status-chip stable" id="appVersionBadge" aria-hidden="true">M400-P2 · 정식 버전</span>
+<span class="status-chip stable">M400-P2 · 정식 버전</span>
+<span class="status-chip idle" id="cvStatus">글자 윤곽 엔진 대기</span>
+<span class="status-chip idle" id="captureStatus">화면 공유 대기</span>
+<span class="status-chip stable">글자 윤곽 + 구조 분석 + OCR</span>
+</div>
+</header>
+<div class="malert-channel-bar" data-channel="stable"><div><strong>M400-P2 정식 버전</strong><span>화면 분석은 브라우저에서</span></div><a class="malert-channel-switch" href="../guide.html">사용 가이드</a></div>
+<main class="shell">
+<section class="intro">
+<div>
+<p class="eyebrow">LIE DETECTOR ALERT ONLY</p>
+<h1>거탐만 빠르게 감지하고<br/>말로 알려줍니다.</h1>
+<p>
+          메이플 화면을 공유하면 거탐 안내문을 확인하고 음성으로 알려드립니다.
+          클릭형·문자 입력형·비올레타형 등 여러 유형을 브라우저 안에서 분석합니다.
+        </p>
+</div>
+<div class="privacy-note">
+<span>LOCAL ONLY</span>
+<strong>화면 분석은 브라우저에서</strong>
+<p>자동 클릭, 자동 입력, 거탐 자동 풀이는 제공하지 않습니다.</p>
+</div>
+</section>
+<section class="control-panel" id="mainControls">
+<div class="screen-mode-control" aria-label="화면 기준 선택">
+<div class="screen-mode-copy">
+<strong>화면 기준</strong>
+<small id="screenModeStatus">가로 기준 · M400-P2 정식 감지</small>
+</div>
+<div class="screen-mode-buttons" role="group" aria-label="화면 방향">
+<button class="screen-mode-button active" id="screenModeLandscapeBtn" type="button" aria-pressed="true">가로 기준</button>
+<button class="screen-mode-button" id="screenModePortraitBtn" type="button" aria-pressed="false">세로 기준</button>
+</div>
+</div>
+<section class="runtime-config-note" aria-label="감지 설정"><strong>감지 설정</strong><p>M400-P2 · 1회 최종 합격</p><small>한 현재 입력 프레임의 모든 필수 최종 판정을 통과하면 1회 최종 합격으로 알립니다. 이전 성공 결과를 재사용하거나 수치 기준을 완화하는 방식이 아닙니다. 룬 알림은 기존 3회 확인을 유지합니다.</small></section>
+<div class="primary-actions">
+<button class="primary-button" id="startCaptureBtn" type="button">
+          메이플 창 선택하기
+        </button>
+<button class="secondary-button" disabled="" id="pauseBtn" type="button">
+          감지 일시정지
+        </button>
+<button class="secondary-button danger" disabled="" id="stopCaptureBtn" type="button">
+          공유 종료
+        </button>
+</div>
+<div class="alert-actions">
+<span class="inline-control detector-always-on">
+          거탐 감지 자동 켜짐
+        </span>
+<button class="secondary-button" id="notificationBtn" type="button">
+          시스템 알림 허용
+        </button>
+<button class="secondary-button" disabled="" id="runAnalysisBtn" type="button">
+          즉시 검사
+        </button>
+<button class="secondary-button" id="selfTestBtn" type="button">
+          내장 클릭 거탐 테스트
+        </button>
+<button class="secondary-button" id="testVoiceBtn" type="button">
+          음성 테스트
+        </button>
+</div>
+</section>
+<details class="setup-guide"><summary>화면 공유 방법 · 권장 설정 보기</summary>
+<section class="browser-picker-guide">
+<strong>화면 공유창 사용 방법</strong>
+<p>
+        Chrome 선택창이 뜨면 <b>창</b> 탭에서 <b>MapleStory</b>를 한 번 클릭한 뒤
+        오른쪽 아래 <b>공유</b>를 누르세요. 현재 사이트 탭이나 전체 화면은 선택하지 마세요.
+        세로 모니터에서 Windows 배율 150%를 사용하는 경우에는 위의 <b>세로 기준</b>을 선택하세요.
+      </p>
+</section>
+<section class="browser-picker-guide" aria-labelledby="gameDisplayGuideTitle"><strong id="gameDisplayGuideTitle">인게임 권장 화면 설정 · 가로 모니터</strong><p><b>가로 모니터 권장 기준: 16:9 · 1920×1080 창모드</b>입니다. 게임 창이 화면에 온전히 들어가지 않으면 1366×768(약 16:9)을 사용하세요. 화면공유에서는 MapleStory 게임 창을 선택하고 감시 영역은 공유한 게임 화면 전체로 두세요.</p><p><b>Chrome 확대율은 100%</b>로 맞추세요. Windows 디스플레이 배율과 게임 내 UI 확대 배율은 별도 설정입니다. Windows 100%를 필수 조건으로 요구하지 않으며, 게임 내 UI 배율별 감지 성능은 아직 검증하지 못했습니다.</p><p>공유 해상도가 같아도 사진이나 게임 화면이 여백 속에 작게 표시되면 미탐이 생길 수 있습니다. 권장 설정이 모든 화면의 감지를 보장하지는 않습니다.</p></section>
+</details>
+<section aria-live="polite" class="share-health-panel idle" id="shareHealthPanel">
+<div aria-hidden="true" class="share-health-icon">◉</div>
+<div class="share-health-copy">
+<span>SCREEN SHARE HEALTH</span>
+<strong id="shareHealthTitle">화면공유 대기</strong>
+<p id="shareHealthBody">메이플 창을 공유하면 끊김·프레임 정지·검은 화면·분석 지연을 자동 점검합니다.</p>
+</div>
+<b class="share-health-badge" id="shareHealthBadge">대기</b>
+</section>
+<section class="dashboard" id="detectionDashboard">
+<article class="main-card">
+<div class="card-heading">
+<div>
+<p class="eyebrow">LIVE DETECTION</p>
+<h2>거짓말탐지기 통합 감지</h2>
+<p>팝업 외형만으로 판정하지 않습니다. 투명·기울어진 문구는 글자 윤곽 패턴으로 찾고, 일반·문자 입력형은 후보 구조와 OCR 핵심 문구를 교차 확인합니다. 분석은 브라우저 안에서 처리합니다. 화면 전송에 동의한 뒤 제보 버튼을 누르면 현재 화면 한 장을 서버로 보냅니다.</p>
+</div>
+<span class="runtime-badge waiting" id="runtimeBadge">대기</span>
+</div>
+<div class="profile-grid" id="profileGrid">
+<span>모델 불러오는 중</span>
+</div>
+<div class="status-grid">
+<div>
+<span>현재 후보 유형</span>
+<strong id="detectedType">없음</strong>
+</div>
+<div>
+<span>최고 일치 점수 (윤곽 1차 + 회색조 2차)</span>
+<strong id="matchScore">—</strong>
+</div>
+<div>
+<span>마지막 분석</span>
+<strong id="lastAnalysis">분석 대기</strong>
+</div>
+<div>
+<span>마지막 알림</span>
+<strong id="lastAlert">—</strong>
+</div>
+</div>
+<section class="voice-settings" id="voiceSettings" aria-labelledby="voiceSettingsTitle"><h3 id="voiceSettingsTitle">알림음 · 한국어 음성 설정</h3><p class="voice-settings-description">안내 문구와 목소리를 정하고, 미리듣기로 한국어 발음을 확인하세요.</p>
+<div class="settings-grid">
+<label class="field field-wide">
+<span>음성 안내 문구</span>
+<input id="voiceTextInput" maxlength="100" type="text" value="거짓말 탐지기가 확인되었습니다."/>
+</label>
+<div class="field voice-choice-field">
+<label for="voiceSelect">한국어 목소리</label>
+<select id="voiceSelect">
+<option value="">기본 한국어 음성</option>
+</select>
+</div>
+<label class="field">
+<span>음성 음량</span>
+<div class="range-line">
+<input id="volumeInput" max="1" min="0" step="0.05" type="range" value="0.9"/>
+<output id="volumeOutput">90%</output>
+</div>
+</label>
+<label class="field">
+<span>음성 속도</span>
+<div class="range-line">
+<input id="rateInput" max="1.35" min="0.75" step="0.05" type="range" value="1"/>
+<output id="rateOutput">1.00×</output>
+</div>
+</label>
+<label class="field">
+<span>재알림 대기 시간</span>
+<div class="number-line">
+<input id="cooldownInput" max="300" min="10" step="5" type="number" value="30"/>
+<b>초</b>
+</div>
+<small>같은 거탐 화면이 계속 떠 있을 때 반복 음성을 제한합니다.</small>
+</label>
+</div>
+</section>
+<p class="policy-updated" style="margin:18px 0 0">M400-P2 · 1.1.52 · 2026.10.21</p><div class="model-meta">
+<span>모델 <strong id="modelVersion">—</strong></span>
+<span>업데이트 <strong id="modelUpdatedAt">—</strong></span>
+<span>지원 유형 <strong id="profileCount">—</strong></span>
+<span>팝업 후보 <strong id="candidateCount">—</strong></span>
+<span>검사 방식 <strong id="searchModeLabel">안내문 후보 탐색 → 현재 입력의 필수 최종 판정 → 1회 최종 합격</strong></span>
+</div>
+</article>
+<aside class="side-column">
+<details class="side-card" open="">
+<summary>공유 화면</summary>
+<div class="side-body">
+<div class="preview-info">
+<span id="resolutionLabel">—</span>
+<strong id="previewStatus">공유 화면 없음</strong>
+</div>
+<div class="preview-wrap" id="previewWrap">
+<video autoplay="" id="captureVideo" muted="" playsinline=""></video>
+<canvas id="previewCanvas"></canvas>
+<div class="empty-preview" id="emptyPreview">
+<span>▣</span>
+<strong>메이플 창을 공유해 주세요.</strong>
+<p>전체 화면이 아니라 메이플 창 하나만 선택하는 게 가장 안정적입니다.</p>
+</div>
+</div>
+<section aria-label="감시 영역 설정" class="monitor-region-panel">
+<div>
+<strong>감시 영역</strong>
+<p id="regionStatus">현재 감시 영역: 전체 화면</p>
+</div>
+<div class="monitor-region-actions">
+<button class="secondary-button" disabled="" id="selectRegionBtn" type="button">
+                  감시 영역 지정
+                </button>
+<button class="secondary-button" disabled="" id="resetRegionBtn" type="button">
+                  전체 화면 감시
+                </button>
+</div>
+<small>
+                채팅창·미니맵 등 오탐이 많은 부분을 제외하되, 거탐이 뜰 수 있는 중앙 영역은 넓게 포함하세요.
+              </small>
+</section>
+</div>
+</details>
+<details class="side-card calibration-card">
+<summary>인게임 캘리브레이션</summary>
+<div class="side-body">
+<p class="calibration-help">
+              인터넷 원본 이미지가 아니라 현재 공유 중인 실제 메이플 프레임을 저장합니다.
+              저장된 PNG 파일명에는 감지 유형·점수·해상도가 함께 기록됩니다.
+            </p>
+<label class="field compact-field">
+<span>실제 화면 유형</span>
+<select id="sampleLabelSelect">
+<option value="normal">정상 사냥 화면</option>
+<option value="text-input">문자 입력형</option>
+<option value="click">클릭형 거탐</option>
+<option value="sentence">올바른 문장 선택형</option>
+<option value="transparent-shape">투명 도형형</option>
+<option value="violetta">비올레타형</option>
+</select>
+</label>
+<div class="calibration-actions">
+<button class="secondary-button" disabled="" id="saveCurrentSampleBtn" type="button">
+                현재 인게임 화면 저장
+              </button>
+<button class="secondary-button danger" disabled="" id="saveFalsePositiveBtn" type="button">
+                오탐 화면 저장
+              </button>
+<button class="secondary-button" disabled="" id="saveLastAlertBtn" type="button">
+                마지막 알림 순간 저장
+              </button>
+</div>
+<div class="calibration-status">
+<span>최근 분석</span>
+<strong id="calibrationCandidate">아직 분석 없음</strong>
+<small id="calibrationMeta">화면 공유 후 사용할 수 있습니다.</small>
+</div>
+</div>
+</details>
+<details class="side-card" open="">
+<summary>감지 기록</summary>
+<div class="side-body">
+<div class="event-log" id="eventLog">
+<p class="empty-log">아직 발생한 알림이 없습니다.</p>
+</div>
+<button class="text-button" id="clearLogBtn" type="button">기록 지우기</button>
+</div>
+</details>
+</aside>
+</section>
+<section class="game-assist" id="gameAssist" aria-label="룬 스킬 알림과 일반 타이머"></section>
+<section class="usage-note">
+<div>
+<span>1</span>
+<p><strong>PC Chrome에서 접속</strong>휴대폰에서는 PC의 메이플 창을 공유할 수 없습니다.</p>
+</div>
+<div>
+<span>2</span>
+<p><strong>메이플 창 선택</strong>화면 공유 창에서 메이플스토리 창 하나만 선택하세요.</p>
+</div>
+<div>
+<span>3</span>
+<p><strong>음성 테스트</strong>게임 전에 한국어 음성이 실제로 들리는지 확인하세요.</p>
+</div>
+</section>
+<section class="content-quality-section" aria-labelledby="assistEvidenceTitle"><p><strong>이전 RUNE1 · 룬 미니맵 보완 기록</strong> · <a href="../RUNE1-REPORT.html">사진 시험 결과와 남은 제한</a></p><div class="section-heading"><p class="eyebrow">이전 OPT12 · 보조 기능 개발 기록</p><h2 id="assistEvidenceTitle">룬·스킬 알림과 타이머 추가</h2><p>룬 표식, 선택한 버프의 남은 시간, 퀵슬롯의 재사용 대기시간을 함께 확인할 수 있습니다. 설치 종료 추정에는 캐릭터별 시간을 입력합니다. 일반 타이머는 화면공유 없이 사용합니다.</p></div><p>실제 게임 공유와 자동 시험의 결과를 구분해서 공개합니다. 작은 숫자 미인식, 실제 음성 청취, 게임 부하에 따른 지연 등 남은 제한을 확인하세요.</p><a class="inline-action-link" href="../OPT12-TEST-REPORT.html">OPT12 시험 결과와 남은 사항</a> · <a class="inline-action-link" href="../assist-guide.html">설정 방법</a></section>
+<section aria-labelledby="qualityEvidenceTitle" class="content-quality-section">
+<div class="section-heading"><p class="eyebrow">이전 OPT11 검증 기록 · 2026.10.05</p><h2 id="qualityEvidenceTitle">공유 미리보기 끊김·분석 지연 보완</h2>
+<p>무거운 이미지 비교 작업을 분리하고 나누어 처리해, 분석 중 화면 갱신이 오래 멈추는 현상을 줄이도록 보완했습니다. 문구 분석 중 새 클릭 안내문을 확인하는 순서도 개선했습니다.</p></div>
+<p>분석이 5초 이상 지연되면 <strong>‘화면공유 연결됨 · 분석 지연’</strong>으로 표시합니다. 이 문단의 OPT11 결과는 이전 버전 기록입니다. 현재 M400-P2는 한 현재 입력 프레임의 모든 필수 최종 판정을 통과하면 1회 최종 합격으로 알립니다. 이전 성공 결과를 재사용하거나 수치 기준을 완화하는 방식이 아닙니다. 룬 알림은 기존 3회 확인을 유지합니다.</p>
+<p>이전 OPT11에서 Chrome 사진 영상 입력을 검사한 결과, 정식·테스트 각각 감지 대상 86/86개가 5초 이내 알림 판정에 도달했고 대조 입력 40개에서 오탐은 0건이었습니다. 초기 준비 시간은 제외한 결과입니다.</p>
+<p><strong>실제 게임 화면공유, 노트북·4K·Windows 125% 배율 및 소리 알림은 당시 OPT11 검사에서 검증하지 못했습니다.</strong> 전체 분석이 매번 5초 안에 끝난다는 의미는 아닙니다.</p>
+<a class="inline-action-link" href="../updates.html#opt11">업데이트 이력과 검증 범위 보기</a>
+</section><section aria-labelledby="telegramContactTitle" class="telegram-contact-section">
+<div class="telegram-contact-copy">
+<span aria-hidden="true" class="telegram-contact-icon">✦</span>
+<div>
+<p class="eyebrow">CONTACT &amp; SUPPORT</p>
+<h2 id="telegramContactTitle">이용·오류·건의 문의</h2>
+<p>M-ALERT 공식 텔레그램에서 사용 문의, 미탐·오탐 제보, 건의 사항과 개선 의견을 받고 있습니다. 화면 제보 전 캐릭터명과 채팅처럼 불필요한 정보는 가려 주세요.</p>
+</div>
+</div>
+<a class="telegram-contact-button" href="https://t.me/MAlert1" rel="noopener noreferrer" target="_blank">
+<svg aria-hidden="true" focusable="false" viewbox="0 0 24 24"><path d="M21.7 3.3a1.3 1.3 0 0 0-1.4-.2L2.9 9.8c-1.2.5-1.2 1.2-.2 1.5l4.5 1.4 1.7 5.2c.2.7.1 1 .8 1 .5 0 .8-.2 1-.4l2.2-2.1 4.6 3.4c.8.5 1.5.3 1.7-.8l3-14.3c.3-.8.1-1.2-.5-1.4ZM9 12.3l8.8-5.5c.4-.3.8-.1.5.2l-7.2 6.5-.3 3.3L9 12.3Z"></path></svg>
+<span>공식 채널에서 문의하기</span>
+</a>
+</section>
+<section aria-labelledby="contentHubTitle" class="content-hub">
+<div class="section-heading">
+<p class="eyebrow">HELP &amp; GUIDE</p>
+<h2 id="contentHubTitle">설정과 문제 해결 가이드</h2>
+<p>처음 사용하는 방법부터 실제 회귀 테스트와 미탐·오탐 개선 과정까지 운영자가 직접 기록한 자료를 확인할 수 있습니다.</p>
+</div><div class="content-hub-layout content-hub-layout-wide"><div class="content-link-grid"><a href="../articles.html"><strong>전체 가이드</strong><span>설정·문제 해결·개발 기록 모아보기</span></a><a href="../how-it-works.html"><strong>작동 원리</strong><span>화면 공유부터 로컬 분석과 알림까지</span></a><a href="../updates.html"><strong>업데이트·테스트 기록</strong><span>M400-P2 정식 버전과 이전 검증 기록</span></a><a href="../missed-detection-case-study.html"><strong>미탐 개선 사례</strong><span>OCR이 깨진 화면을 보완한 과정</span></a><a href="../chrome-screen-share-guide.html"><strong>화면 공유</strong><span>게임 창만 정확히 선택하는 방법</span></a><a href="../false-positive-guide.html"><strong>오탐 해결</strong><span>일반 사냥 화면에서 알림 줄이기</span></a><a href="../missed-detection-guide.html"><strong>미탐 해결</strong><span>거탐이 떴는데 안 울릴 때 점검</span></a><a href="../about-operation.html"><strong>운영 원칙</strong><span>무료 운영·업데이트·제보 처리 기준</span></a></div>
+</div>
+</section>
+</main>
+<footer class="site-footer">
+<div class="footer-inner">
+<p>
+        비공식 화면 알림 도구입니다. 화면 분석은 현재 브라우저에서만 이루어지며
+        자동 입력·자동 클릭·거짓말탐지기 자동 풀이는 포함하지 않습니다.
+      </p>
+<nav aria-label="하단 메뉴">
+<a href="../articles.html">전체 가이드</a><a href="../updates.html">업데이트 이력</a>
+<a href="../faq.html">FAQ</a>
+<a href="../privacy.html">개인정보처리방침</a>
+<a href="../terms.html">이용약관</a>
+<a href="https://t.me/MAlert1" rel="noopener noreferrer" target="_blank">텔레그램 문의</a>
+</nav>
+</div>
+<p data-current-release="M400-P2">M-ALERT M400-P2 · 1.1.52 · 2026.10.21</p></footer>
+<canvas hidden="" id="workCanvas"></canvas>
+<a aria-label="텔레그램으로 M-Alert 문의하기" class="telegram-contact-fab" href="https://t.me/MAlert1" rel="noopener noreferrer" target="_blank">
+<svg aria-hidden="true" focusable="false" viewbox="0 0 24 24"><path d="M21.7 3.3a1.3 1.3 0 0 0-1.4-.2L2.9 9.8c-1.2.5-1.2 1.2-.2 1.5l4.5 1.4 1.7 5.2c.2.7.1 1 .8 1 .5 0 .8-.2 1-.4l2.2-2.1 4.6 3.4c.8.5 1.5.3 1.7-.8l3-14.3c.3-.8.1-1.2-.5-1.4ZM9 12.3l8.8-5.5c.4-.3.8-.1.5.2l-7.2 6.5-.3 3.3L9 12.3Z"></path></svg>
+<span><small>텔레그램 문의</small><strong>@MAlert1</strong></span>
+</a>
+
+</body>
+</html>
